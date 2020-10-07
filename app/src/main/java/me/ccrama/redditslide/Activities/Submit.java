@@ -10,10 +10,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -27,11 +23,16 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import me.ccrama.redditslide.Views.ImageInsertEditText;
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Submission;
@@ -52,16 +53,15 @@ import java.util.List;
 
 import gun0912.tedbottompicker.TedBottomPicker;
 import me.ccrama.redditslide.Authentication;
-import me.ccrama.redditslide.Constants;
 import me.ccrama.redditslide.Drafts;
 import me.ccrama.redditslide.OpenRedditLink;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
-import me.ccrama.redditslide.SecretConstants;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
 import me.ccrama.redditslide.UserSubscriptions;
 import me.ccrama.redditslide.Views.CommentOverflow;
 import me.ccrama.redditslide.Views.DoEditorActions;
+import me.ccrama.redditslide.Views.ImageInsertEditText;
 import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.SubmissionParser;
 import me.ccrama.redditslide.util.TitleExtractor;
@@ -289,21 +289,18 @@ public class Submit extends BaseActivity {
             @Override
             public void onClick(View view) {
                 TedBottomPicker tedBottomPicker =
-                        new TedBottomPicker.Builder(Submit.this).setOnImageSelectedListener(
-                                new TedBottomPicker.OnImageSelectedListener() {
-                                    @Override
-                                    public void onImageSelected(List<Uri> uri) {
-                                        handleImageIntent(uri);
-                                    }
-                                })
+                        new TedBottomPicker.Builder(Submit.this)
+                                .setOnImageSelectedListener(Submit.this::handleImageIntent)
                                 .setLayoutResource(R.layout.image_sheet_dialog)
                                 .setTitle("Choose a photo")
                                 .create();
 
                 tedBottomPicker.show(getSupportFragmentManager());
                 InputMethodManager imm =
-                        (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(findViewById(R.id.bodytext).getWindowToken(), 0);
+                        ContextCompat.getSystemService(Submit.this, InputMethodManager.class);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(findViewById(R.id.bodytext).getWindowToken(), 0);
+                }
             }
         });
 
@@ -318,7 +315,7 @@ public class Submit extends BaseActivity {
                 ((EditText) findViewById(R.id.titletext)).setText(
                         data.substring(0, data.indexOf("\n")));
                 ((EditText) findViewById(R.id.urltext)).setText(
-                        data.substring(data.indexOf("\n"), data.length()));
+                        data.substring(data.indexOf("\n")));
             } else {
                 ((EditText) findViewById(R.id.urltext)).setText(data);
             }
@@ -409,7 +406,7 @@ public class Submit extends BaseActivity {
         } else {
             //Multiple images
             try {
-                new UploadImgurAlbum(this, uris.toArray(new Uri[uris.size()]));
+                new UploadImgurAlbum(this, uris.toArray(new Uri[0]));
             } catch (Exception e) {
                 e.printStackTrace();
 
@@ -439,7 +436,7 @@ public class Submit extends BaseActivity {
                                 "reddit.com/r/" + ((AutoCompleteTextView) findViewById(
                                         R.id.subreddittext)).getText().toString() + "/comments/" + s
                                         .getFullName()
-                                        .substring(3, s.getFullName().length()));
+                                        .substring(3));
                         Submit.this.finish();
                     } catch (final ApiException e) {
                         Drafts.addDraft(text);
@@ -471,7 +468,7 @@ public class Submit extends BaseActivity {
                                 "reddit.com/r/" + ((AutoCompleteTextView) findViewById(
                                         R.id.subreddittext)).getText().toString() + "/comments/" + s
                                         .getFullName()
-                                        .substring(3, s.getFullName().length()));
+                                        .substring(3));
 
                         Submit.this.finish();
                     } catch (final ApiException e) {
@@ -510,7 +507,7 @@ public class Submit extends BaseActivity {
                                 "reddit.com/r/" + ((AutoCompleteTextView) findViewById(
                                         R.id.subreddittext)).getText().toString() + "/comments/" + s
                                         .getFullName()
-                                        .substring(3, s.getFullName().length()));
+                                        .substring(3));
 
                         Submit.this.finish();
                     } catch (final Exception e) {
@@ -630,7 +627,7 @@ public class Submit extends BaseActivity {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte byt[] = new byte[1024];
+                byte[] byt = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -673,19 +670,12 @@ public class Submit extends BaseActivity {
                         .build();
 
                 DoEditorActions.ProgressRequestBody body =
-                        new DoEditorActions.ProgressRequestBody(formBody,
-                                new DoEditorActions.ProgressRequestBody.Listener() {
-                                    @Override
-                                    public void onProgress(int progress) {
-                                        publishProgress(progress);
-                                    }
-                                });
+                        new DoEditorActions.ProgressRequestBody(formBody, this::publishProgress);
 
 
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                        .url("https://imgur-apiv3.p.mashape.com/3/image")
+                        "Client-ID bef87913eb202e9")
+                        .url("https://api.imgur.com/3/image")
                         .post(body)
                         .build();
 
@@ -813,7 +803,7 @@ public class Submit extends BaseActivity {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte byt[] = new byte[1024];
+                byte[] byt = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -853,9 +843,8 @@ public class Submit extends BaseActivity {
             String albumurl;
             {
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                        .url("https://imgur-apiv3.p.mashape.com/3/album")
+                        "Client-ID bef87913eb202e9")
+                        .url("https://api.imgur.com/3/album")
                         .post(new RequestBody() {
                             @Override
                             public MediaType contentType() {
@@ -897,19 +886,12 @@ public class Submit extends BaseActivity {
                     MultipartBody formBody = formBodyBuilder.build();
 
                     DoEditorActions.ProgressRequestBody body =
-                            new DoEditorActions.ProgressRequestBody(formBody,
-                                    new DoEditorActions.ProgressRequestBody.Listener() {
-                                        @Override
-                                        public void onProgress(int progress) {
-                                            publishProgress(progress);
-                                        }
-                                    });
+                            new DoEditorActions.ProgressRequestBody(formBody, this::publishProgress);
 
 
                     Request request = new Request.Builder().header("Authorization",
-                            "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                            .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                            .url("https://imgur-apiv3.p.mashape.com/3/image")
+                            "Client-ID bef87913eb202e9")
+                            .url("https://api.imgur.com/3/image")
                             .post(body)
                             .build();
 

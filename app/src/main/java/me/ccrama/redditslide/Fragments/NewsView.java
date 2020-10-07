@@ -9,15 +9,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -27,7 +18,18 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.MarginLayoutParamsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.itemanimators.AlphaInAnimator;
 import com.mikepenz.itemanimators.SlideUpAlphaAnimator;
 
@@ -97,8 +99,8 @@ public class NewsView extends Fragment implements SubmissionDisplay {
 
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(),
                 new ColorPreferences(inflater.getContext()).getThemeSubreddit(id));
-        final View v = ((LayoutInflater) contextThemeWrapper.getSystemService(
-                Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.fragment_verticalcontent,
+        final View v = ContextCompat.getSystemService(
+                contextThemeWrapper, LayoutInflater.class).inflate(R.layout.fragment_verticalcontent,
                 container, false);
 
         if (getActivity() instanceof MainActivity) {
@@ -108,16 +110,11 @@ public class NewsView extends Fragment implements SubmissionDisplay {
 
         rv.setHasFixedSize(true);
 
-        final RecyclerView.LayoutManager mLayoutManager;
-        mLayoutManager = createLayoutManager(
+        final RecyclerView.LayoutManager mLayoutManager = createLayoutManager(
                 getNumColumns(getResources().getConfiguration().orientation, getActivity()));
 
         if (!(getActivity() instanceof SubredditView)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                v.findViewById(R.id.back).setBackground(null);
-            } else {
-                v.findViewById(R.id.back).setBackgroundDrawable(null);
-            }
+            v.findViewById(R.id.back).setBackground(null);
         }
         rv.setLayoutManager(mLayoutManager);
         rv.setItemAnimator(new SlideUpAlphaAnimator().withInterpolator(new LinearOutSlowInInterpolator()));
@@ -136,11 +133,7 @@ public class NewsView extends Fragment implements SubmissionDisplay {
             RelativeLayout.LayoutParams params =
                     new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                params.setMarginStart(0);
-            } else {
-                MarginLayoutParamsCompat.setMarginStart(params, 0);
-            }
+            MarginLayoutParamsCompat.setMarginStart(params, 0);
             rv.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
             mSwipeRefreshLayout.setLayoutParams(params);
         }
@@ -213,7 +206,7 @@ public class NewsView extends Fragment implements SubmissionDisplay {
                                     android.view.ViewConfiguration.getLongPressTimeout());
                         }
                         if (((event.getAction() == MotionEvent.ACTION_MOVE)
-                                && Math.abs(event.getY() - origY) > fab.getHeight() / 2)
+                                && Math.abs(event.getY() - origY) > fab.getHeight() / 2.0f)
                                 || (event.getAction() == MotionEvent.ACTION_UP)) {
                             handler.removeCallbacks(mLongPressRunnable);
                         }
@@ -259,7 +252,7 @@ public class NewsView extends Fragment implements SubmissionDisplay {
                         });*/
                         View view = s.getView();
                         TextView tv = view.findViewById(
-                                android.support.design.R.id.snackbar_text);
+                                com.google.android.material.R.id.snackbar_text);
                         tv.setTextColor(Color.WHITE);
                         s.show();
                     }
@@ -352,12 +345,7 @@ public class NewsView extends Fragment implements SubmissionDisplay {
         adapter.setHasStableIds(true);
         rv.setAdapter(adapter);
         posts.loadMore(getActivity(), this, true);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refresh();
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
     }
 
     public void doAdapter(boolean force18) {
@@ -373,12 +361,7 @@ public class NewsView extends Fragment implements SubmissionDisplay {
         adapter.setHasStableIds(true);
         rv.setAdapter(adapter);
         posts.loadMore(getActivity(), this, true);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refresh();
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
     }
 
     public List<Submission> clearSeenPosts(boolean forever) {
@@ -480,12 +463,11 @@ public class NewsView extends Fragment implements SubmissionDisplay {
 
                     if (startIndex != -1 && !forced) {
                         adapter.notifyItemRangeInserted(startIndex + 1, posts.posts.size());
-                        adapter.notifyDataSetChanged();
                     } else {
                         forced = false;
                         rv.scrollToPosition(0);
-                        adapter.notifyDataSetChanged();
                     }
+                    adapter.notifyDataSetChanged();
 
                 }
             });
@@ -571,10 +553,8 @@ public class NewsView extends Fragment implements SubmissionDisplay {
                                 visibleItemCount = rv.getLayoutManager().getChildCount();
                                 totalItemCount = rv.getLayoutManager().getItemCount();
 
-                                int[] firstVisibleItems;
-                                firstVisibleItems =
-                                        ((CatchStaggeredGridLayoutManager) rv.getLayoutManager()).findFirstVisibleItemPositions(
-                                                null);
+                                int[] firstVisibleItems = ((CatchStaggeredGridLayoutManager) rv.getLayoutManager()).findFirstVisibleItemPositions(
+                                        null);
                                 if (firstVisibleItems != null && firstVisibleItems.length > 0) {
                                     for (int firstVisibleItem : firstVisibleItems) {
                                         pastVisiblesItems = firstVisibleItem;

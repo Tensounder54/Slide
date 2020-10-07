@@ -12,14 +12,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
-import com.nostra13.universalimageloader.core.imageaware.ImageAware;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
-
-import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,11 +22,12 @@ import me.ccrama.redditslide.util.OkHttpImageDownloader;
 /**
  * Created by carlo_000 on 10/19/2015.
  */
-    /*Adapted from https://github.com/Kennyc1012/Opengur */
+/*Adapted from https://github.com/Kennyc1012/Opengur */
 
 public class ImageLoaderUtils {
 
     public static ImageLoaderUnescape imageLoader;
+    public static DisplayImageOptions options;
 
     private ImageLoaderUtils() {
     }
@@ -44,19 +38,20 @@ public class ImageLoaderUtils {
         }
         return context.getCacheDir();
     }
+
     public static File getCacheDirectoryGif(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) && context.getExternalCacheDir() != null) {
             return new File(context.getExternalCacheDir() + File.separator + "gifs");
         }
         return new File(context.getCacheDir() + File.separator + "gifs");
     }
+
     public static void initImageLoader(Context context) {
         long discCacheSize = 1024 * 1024;
         DiskCache discCache;
         File dir = getCacheDirectory(context);
-        int threadPoolSize;
         discCacheSize *= 100;
-        threadPoolSize = 7;
+        int threadPoolSize = 7;
         if (discCacheSize > 0) {
             try {
                 dir.mkdir();
@@ -91,34 +86,5 @@ public class ImageLoaderUtils {
 
         imageLoader = ImageLoaderUnescape.getInstance();
         imageLoader.init(config);
-
     }
-    public static DisplayImageOptions options;
-
-}
-
-class ImageLoaderUnescape extends  ImageLoader {
-
-    @Override
-    public void displayImage(String uri, ImageAware imageAware, DisplayImageOptions options,
-            ImageSize targetSize, ImageLoadingListener listener, ImageLoadingProgressListener progressListener) {
-        String newUri = StringEscapeUtils.unescapeHtml4(uri);
-        super.displayImage(newUri, imageAware, options, targetSize, listener, progressListener);
-    }
-
-    private volatile static ImageLoaderUnescape instance;
-
-    public static ImageLoaderUnescape getInstance() {
-        if (instance == null) {
-            synchronized (ImageLoader.class) {
-                if (instance == null) {
-                    instance = new ImageLoaderUnescape();
-                }
-            }
-        }
-        return instance;
-    }
-
-
-
 }

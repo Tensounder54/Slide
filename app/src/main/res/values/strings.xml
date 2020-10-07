@@ -45,9 +45,9 @@
     <string name="submission_comment_unsaved">Comment un-saved</string>
     <string name="submission_share_permalink">Share link</string>
     <string name="submission_comment_copied">Comment text copied</string>
+    <string name="submission_text_copied">Submission text copied</string>
     <string name="submission_nocontent">Submission has no content</string>
     <string name="submission_link_copied">Link copied</string>
-    <string name="submission_text_copied">Selftext copied</string>
     <string name="submission_removed">Submission removed</string>
 
 
@@ -130,6 +130,7 @@
 
 
     <!-- User profile -->
+    <string name="profile_karma_total">Total karma</string>
     <string name="profile_karma_link">Post karma</string>
     <string name="profile_karma_comment">Comment karma</string>
     <string name="profile_message">Private message</string>
@@ -315,6 +316,8 @@
     <string name="multi_submit_which_sub">Which sub would you like to submit to?</string>
     <string name="multi_saved_successfully">Saved successfully</string>
     <string name="delete_multireddit_title">Do you really want to delete /m/%1$s?</string>
+    <string name="multi_save_option">Would you like to save this multireddit?</string>
+
 
 
     <!-- Content types -->
@@ -328,6 +331,8 @@
     <string name="type_album">Album</string>
     <string name="type_xkcd">XKCD</string>
     <string name="type_nsfw_album">NSFW album</string>
+    <string name="type_nsfw_gallery">NSFW Gallery</string>
+    <string name="type_gallery">Gallery</string>
     <string name="type_img">Image</string>
     <string name="type_vid">Video</string>
     <string name="type_videos">Videos</string>
@@ -513,6 +518,12 @@
     <string name="mod_btn_unmark_nsfw">Unmark NSFW</string>
     <string name="mod_btn_mark_spoiler">Mark as spoiler</string>
     <string name="mod_btn_unmark_spoiler">Unmark as spoiler</string>
+    <string name="mod_btn_lock_thread">Lock thread</string>
+    <string name="mod_btn_unlock_thread">Unlock thread</string>
+    <string name="mod_btn_lock_comment">Lock comment</string>
+    <string name="mod_btn_unlock_comment">Unlock comment</string>
+    <string name="mod_locked">Locked</string>
+    <string name="mod_unlocked">Unlocked</string>
     <string name="mod_btn_pin">Pin</string>
     <string name="mod_btn_unpin">Unpin</string>
     <string name="mod_btn_remove">Remove</string>
@@ -694,7 +705,7 @@
     <string name="settings_section_save_history">Save history</string>
     <string name="settings_section_clear_history">Clear history</string>
     <string name="settings_section_data_saving_mode">Data saving mode</string>
-    <string name="settings_section_image_quality">Image quality</string>
+    <string name="settings_section_data_saving_quality">Data saving quality</string>
     <string name="settings_section_hide_images">Hide images</string>
     <string name="settings_comment_color">Colorful comment depth indicators</string>
     <string name="settings_volume_nav_comments">Navigate comments using volume buttons</string>
@@ -712,7 +723,9 @@
     <string name="settings_comment_collapse">Fully collapse comments</string>
     <string name="settings_comment_collapse_description">Also disables comment animations</string>
     <string name="settings_comment_collapse_default">Collapse child comments by default</string>
-    <string name="settings_data_enable">Enable datasaving settings</string>
+    <string name="settings_data_enable">Enable Data Saving settings</string>
+    <string name="settings_data_video_quality">Prefer low-quality videos when Data Saving enabled</string>
+    <string name="settings_comments_collapse_deleted">Collapse deleted comments by default</string>
     <string name="settings_backup_occurs">Backup will occur at %1$s</string>
     <string name="settings_backup_none">No subreddits will back up</string>
     <string name="settings_backup_will_backup">\u0020will back up</string>
@@ -731,6 +744,8 @@
     <string name="settings_layout_picture_mode">Picture mode</string>
     <string name="settings_general_expanded_toolbar">Expanded toolbar menu</string>
     <string name="settings_general_expanded_toolbar_desc">Show more options on the subreddit toolbar</string>
+    <string name="settings_always_show_floating_action_button">Always show floating action button</string>
+    <string name="settings_always_show_floating_action_button_desc">Never hide floating action button when scrolling</string>
     <string name="settings_theme_tinting">Submission color tinting mode</string>
     <string name="settings_reddit_thumbnail_mode">Thumbnail mode</string>
     <string name="settings_layout_actionbar_mode">Actionbar mode</string>
@@ -1147,6 +1162,7 @@
     <string name="mode_centered">Card with centered image</string>
     <string name="mode_card">Card</string>
     <string name="mode_thumbnail">Thumbnail</string>
+    <string name="mode_no_thumbnails">No Thumbnail</string>
     <string name="mode_big_thumbnails">Wide thumbnails</string>
     <string name="mode_cropped">Cropped big picture</string>
     <string name="mode_bigpic">Big picture</string>
@@ -1283,6 +1299,8 @@
     <string name="theme_pixel">Pixel</string>
     <string name="save_images_to_subreddit_specific_subfolders">Save images to subreddit-specific subfolders</string>
     <string name="description_save_subfolders">Works in submission and comment views</string>
+    <string name="show_image_download_button">Download Shortcut</string>
+    <string name="description_image_download_button">Show download button in the image viewer</string>
     <string name="content_settings">Content settings</string>
     <string name="setting_titleTop">Show title above info line</string>
     <string name="setting_notification_piggybacking">Notification Piggybacking</string>
@@ -1308,4 +1326,5 @@
     <string name="show_collapse_expand_nav_bar">Show collapse/expand button in the comment navigation bar</string>
     <string name="page_not_found">Page not found</string>
     <string name="page_does_not_exist">The page you requested does not exist</string>
+    <string name="back_button_behavior_goto_first">Go to first subreddit</string>
 </resources>

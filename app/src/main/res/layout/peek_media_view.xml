@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         xmlns:cardview="http://schemas.android.com/apk/res-auto"
@@ -27,13 +27,13 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-            <me.ccrama.redditslide.Views.MediaVideoView
+            <me.ccrama.redditslide.Views.ExoVideoView
                     android:id="@+id/gif"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_centerInParent="true">
 
-            </me.ccrama.redditslide.Views.MediaVideoView>
+            </me.ccrama.redditslide.Views.ExoVideoView>
 
             <FrameLayout
                     android:id="@+id/placeholder"
@@ -80,4 +80,4 @@
                 android:layout_height="wrap_content"/>
 
     </RelativeLayout>
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

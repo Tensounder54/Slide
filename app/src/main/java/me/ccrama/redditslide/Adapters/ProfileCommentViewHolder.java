@@ -1,8 +1,9 @@
 package me.ccrama.redditslide.Adapters;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
@@ -22,12 +23,12 @@ public class ProfileCommentViewHolder extends RecyclerView.ViewHolder {
 
     public ProfileCommentViewHolder(View v) {
         super(v);
-        title = (TextView) v.findViewById(R.id.title);
+        title = v.findViewById(R.id.title);
         user = v.findViewById(R.id.user);
-        score = (TextView) v.findViewById(R.id.score);
-        time = (TextView) v.findViewById(R.id.time);
+        score = v.findViewById(R.id.score);
+        time = v.findViewById(R.id.time);
         gild = v.findViewById(R.id.gildtext);
-        content = (SpoilerRobotoTextView) v.findViewById(R.id.content);
-        overflow = (CommentOverflow) v.findViewById(R.id.commentOverflow);
+        content = v.findViewById(R.id.content);
+        overflow = v.findViewById(R.id.commentOverflow);
     }
 }

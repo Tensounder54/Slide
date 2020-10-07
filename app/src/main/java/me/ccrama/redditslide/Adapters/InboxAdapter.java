@@ -14,14 +14,10 @@ import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -36,9 +32,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.cocosw.bottomsheet.BottomSheet;
 import com.devspark.robototextview.RobotoTypefaces;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.InboxManager;
@@ -227,7 +229,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             if (comment.getDataNode().has("link_title")) {
                 SpannableStringBuilder link = new SpannableStringBuilder(" "
-                        + Html.fromHtml(comment.getDataNode().get("link_title").asText())
+                        + HtmlCompat.fromHtml(comment.getDataNode().get("link_title").asText(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                         + " ");
                 link.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), 0, link.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -257,22 +259,22 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     final int color = ta.getColor(0, Color.WHITE);
                     Drawable profile = mContext.getResources().getDrawable(R.drawable.profile);
                     final Drawable reply = mContext.getResources().getDrawable(R.drawable.reply);
-                    Drawable unhide = mContext.getResources().getDrawable(R.drawable.ic_visibility);
+                    Drawable unhide = mContext.getResources().getDrawable(R.drawable.visibility);
                     Drawable hide = mContext.getResources().getDrawable(R.drawable.hide);
-                    Drawable copy = mContext.getResources().getDrawable(R.drawable.ic_content_copy);
+                    Drawable copy = mContext.getResources().getDrawable(R.drawable.copy);
                     Drawable reddit = mContext.getResources().getDrawable(R.drawable.commentchange);
 
-                    profile.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                    hide.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                    copy.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                    reddit.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                    reply.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                    unhide.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+                    profile.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                    hide.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                    copy.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                    reddit.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                    reply.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                    unhide.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
 
                     ta.recycle();
 
                     BottomSheet.Builder b = new BottomSheet.Builder((Activity) mContext).title(
-                            Html.fromHtml(comment.getSubject()));
+                            HtmlCompat.fromHtml(comment.getSubject(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
                     String author = comment.getAuthor();
                     if (!dataSet.where.contains("mod")
@@ -330,11 +332,13 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                 break;
                                 case 25: {
                                     ClipboardManager clipboard =
-                                            (ClipboardManager) mContext.getSystemService(
-                                                    Context.CLIPBOARD_SERVICE);
+                                            ContextCompat.getSystemService(
+                                                    mContext, ClipboardManager.class);
                                     ClipData clip =
                                             ClipData.newPlainText("Message", comment.getBody());
-                                    clipboard.setPrimaryClip(clip);
+                                    if (clipboard != null) {
+                                        clipboard.setPrimaryClip(clip);
+                                    }
                                     Toast.makeText(mContext,
                                             mContext.getString(R.string.mail_message_copied),
                                             Toast.LENGTH_SHORT).show();
@@ -381,8 +385,8 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             if (comment.getDataNode().has("link_title")) {
                                 SpannableStringBuilder link = new SpannableStringBuilder(
                                         " "
-                                                + Html.fromHtml(
-                                                comment.getDataNode().get("link_title").asText())
+                                                + HtmlCompat.fromHtml(
+                                                comment.getDataNode().get("link_title").asText(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                                 + " ");
                                 link.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), 0, link.length(),
                                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -425,7 +429,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         final View dialoglayout = inflater.inflate(R.layout.edit_comment, null);
         final AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(mContext);
 
-        final EditText e = (EditText) dialoglayout.findViewById(R.id.entry);
+        final EditText e = dialoglayout.findViewById(R.id.entry);
 
         DoEditorActions.doActions(e, dialoglayout,
                 ((AppCompatActivity) mContext).getSupportFragmentManager(), (Activity) mContext,
@@ -491,7 +495,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Snackbar s = Snackbar.make(listView, "Reply sent!", Snackbar.LENGTH_LONG);
                 View view = s.getView();
                 TextView tv =
-                        (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                        view.findViewById(com.google.android.material.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 s.show();
             } else {
@@ -499,7 +503,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         Snackbar.LENGTH_LONG);
                 View view = s.getView();
                 TextView tv =
-                        (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                        view.findViewById(com.google.android.material.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 s.show();
                 Drafts.addDraft(text);
@@ -509,7 +513,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }
@@ -556,7 +560,7 @@ public class InboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private class AsyncSetRead extends AsyncTask<Message, Void, Void> {
+    private static class AsyncSetRead extends AsyncTask<Message, Void, Void> {
 
         Boolean b;
 

@@ -2,16 +2,16 @@ package me.ccrama.redditslide.Adapters;
 
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.http.RestResponse;
 import net.dean.jraw.http.SubmissionRequest;
-import net.dean.jraw.models.Comment;
 import net.dean.jraw.models.CommentNode;
 import net.dean.jraw.models.CommentSort;
 import net.dean.jraw.models.Submission;
@@ -29,7 +29,6 @@ import java.util.TreeMap;
 import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.Fragments.CommentPage;
 import me.ccrama.redditslide.LastComments;
-import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.NetworkUtil;
 
 /**
@@ -160,7 +159,7 @@ public class SubmissionComments {
         if (context == null || context.isEmpty()) {
             Snackbar s = Snackbar.make(page.rv, "Comment submitted", Snackbar.LENGTH_SHORT);
             View view = s.getView();
-            TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+            TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
             tv.setTextColor(Color.WHITE);
             s.show();
         }
@@ -207,7 +206,7 @@ public class SubmissionComments {
     }
 
     public void reloadSubmission(CommentAdapter commentAdapter) {
-        commentAdapter.submission = Authentication.reddit.getSubmission(submission.getFullName().substring(3, submission.getFullName().length()));
+        commentAdapter.submission = Authentication.reddit.getSubmission(submission.getFullName().substring(3));
     }
 
     public boolean forceSorting = false;

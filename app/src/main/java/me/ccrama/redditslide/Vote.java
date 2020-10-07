@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.TextView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
@@ -52,7 +53,7 @@ public class Vote extends AsyncTask<PublicContribution, Void, Void> {
                             if (v != null && c != null && v.getContext() != null) {
                                 Snackbar s = Snackbar.make(v, R.string.vote_err, Snackbar.LENGTH_SHORT);
                                 View view = s.getView();
-                                TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                                TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                                 tv.setTextColor(Color.WHITE);
                                 s.show();
                             }
@@ -72,7 +73,7 @@ public class Vote extends AsyncTask<PublicContribution, Void, Void> {
                         if (v != null && c != null && v.getContext() != null) {
                             Snackbar s = Snackbar.make(v, R.string.vote_err_login, Snackbar.LENGTH_SHORT);
                             View view = s.getView();
-                            TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                            TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
 

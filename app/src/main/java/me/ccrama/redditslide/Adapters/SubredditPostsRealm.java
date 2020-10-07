@@ -3,11 +3,12 @@ package me.ccrama.redditslide.Adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBar;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.core.text.HtmlCompat;
 
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 
 import me.ccrama.redditslide.Activities.BaseActivity;
-import me.ccrama.redditslide.Activities.MainActivity;
 import me.ccrama.redditslide.Activities.NewsActivity;
 import me.ccrama.redditslide.Activities.SubredditView;
 import me.ccrama.redditslide.Authentication;
@@ -109,19 +109,19 @@ public class SubredditPostsRealm implements PostLoader {
 
                             int length = submission.getThumbnails().getVariations().length;
                             if (SettingValues.lqLow && length >= 3) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[2].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (SettingValues.lqMid && length >= 4) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[3].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (length >= 5) {
-                                url = Html.fromHtml(submission.getThumbnails().getVariations()[
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getVariations()[
                                         length
-                                                - 1].getUrl()).toString(); //unescape url characters
+                                                - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(); //unescape url characters
                             } else {
-                                url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             }
 
@@ -178,24 +178,24 @@ public class SubredditPostsRealm implements PostLoader {
 
                             int length = submission.getThumbnails().getVariations().length;
                             if (SettingValues.lqLow && length >= 3) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[2].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (SettingValues.lqMid && length >= 4) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[3].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (length >= 5) {
-                                url = Html.fromHtml(submission.getThumbnails().getVariations()[
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getVariations()[
                                         length
-                                                - 1].getUrl()).toString(); //unescape url characters
+                                                - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(); //unescape url characters
                             } else {
-                                url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             }
 
                         } else {
-                            url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                            url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
 
@@ -497,9 +497,9 @@ public class SubredditPostsRealm implements PostLoader {
         int i = 0;
         for (String s : all) {
             String[] split = s.split(",");
-            titles[i] = (Long.valueOf(split[1]) == 0 ? c.getString(
+            titles[i] = (Long.parseLong(split[1]) == 0 ? c.getString(
                     R.string.settings_backup_submission_only)
-                    : TimeUtils.getTimeAgo(Long.valueOf(split[1]), c) + c.getString(
+                    : TimeUtils.getTimeAgo(Long.parseLong(split[1]), c) + c.getString(
                             R.string.settings_backup_comments));
             base[i] = s;
             i++;
@@ -542,7 +542,7 @@ public class SubredditPostsRealm implements PostLoader {
                                             displayer.updateOfflineError();
                                         }
                                         // update offline
-                                        displayer.updateOffline(posts, Long.valueOf(s2[1]));
+                                        displayer.updateOffline(posts, Long.parseLong(s2[1]));
                                     }
                                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 return true;

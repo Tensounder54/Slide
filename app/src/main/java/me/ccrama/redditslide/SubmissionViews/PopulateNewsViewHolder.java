@@ -11,38 +11,44 @@ import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.AbsoluteSizeSpan;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.*;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.cocosw.bottomsheet.BottomSheet;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Contribution;
 import net.dean.jraw.models.Ruleset;
 import net.dean.jraw.models.Submission;
-
 import net.dean.jraw.models.SubredditRule;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -127,7 +133,6 @@ public class PopulateNewsViewHolder {
                         if (!PostMatch.openExternal(submission.getUrl())
                                 || type == ContentType.Type.VIDEO) {
                             switch (type) {
-                                case VID_ME:
                                 case STREAMABLE:
                                     if (SettingValues.video) {
                                         Intent myIntent =
@@ -141,15 +146,18 @@ public class PopulateNewsViewHolder {
                                     }
                                     break;
                                 case IMGUR:
+                                case DEVIANTART:
+                                case XKCD:
+                                case IMAGE:
                                     openImage(type, contextActivity, submission, holder.leadImage,
                                             holder.getAdapterPosition());
                                     break;
                                 case EMBEDDED:
                                     if (SettingValues.video) {
-                                        String data = Html.fromHtml(submission.getDataNode()
+                                        String data = HtmlCompat.fromHtml(submission.getDataNode()
                                                 .get("media_embed")
                                                 .get("content")
-                                                .asText()).toString();
+                                                .asText(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
                                         {
                                             Intent i = new Intent(contextActivity,
                                                     FullscreenVideo.class);
@@ -182,13 +190,13 @@ public class PopulateNewsViewHolder {
                                             i = new Intent(contextActivity, AlbumPager.class);
                                             i.putExtra(AlbumPager.SUBREDDIT,
                                                     submission.getSubredditName());
-                                            i.putExtra(Album.EXTRA_URL, submission.getUrl());
                                         } else {
                                             i = new Intent(contextActivity, Album.class);
                                             i.putExtra(Album.SUBREDDIT,
                                                     submission.getSubredditName());
-                                            i.putExtra(Album.EXTRA_URL, submission.getUrl());
                                         }
+                                        i.putExtra(Album.EXTRA_URL, submission.getUrl());
+
                                         addAdaptorPosition(i, submission,
                                                 holder.getAdapterPosition());
                                         contextActivity.startActivity(i);
@@ -206,13 +214,13 @@ public class PopulateNewsViewHolder {
                                             i = new Intent(contextActivity, TumblrPager.class);
                                             i.putExtra(TumblrPager.SUBREDDIT,
                                                     submission.getSubredditName());
-                                            i.putExtra(Album.EXTRA_URL, submission.getUrl());
                                         } else {
                                             i = new Intent(contextActivity, Tumblr.class);
                                             i.putExtra(Tumblr.SUBREDDIT,
                                                     submission.getSubredditName());
-                                            i.putExtra(Album.EXTRA_URL, submission.getUrl());
                                         }
+                                        i.putExtra(Album.EXTRA_URL, submission.getUrl());
+
                                         addAdaptorPosition(i, submission,
                                                 holder.getAdapterPosition());
                                         contextActivity.startActivity(i);
@@ -222,12 +230,6 @@ public class PopulateNewsViewHolder {
                                         LinkUtil.openExternally(submission.getUrl());
 
                                     }
-                                    break;
-                                case DEVIANTART:
-                                case XKCD:
-                                case IMAGE:
-                                    openImage(type, contextActivity, submission, holder.leadImage,
-                                            holder.getAdapterPosition());
                                     break;
                                 case GIF:
                                     openGif(contextActivity, submission,
@@ -257,7 +259,7 @@ public class PopulateNewsViewHolder {
                                 Snackbar.LENGTH_SHORT);
                         View view = s.getView();
                         TextView tv = view.findViewById(
-                                android.support.design.R.id.snackbar_text);
+                                com.google.android.material.R.id.snackbar_text);
                         tv.setTextColor(Color.WHITE);
                         s.show();
                     }
@@ -275,9 +277,8 @@ public class PopulateNewsViewHolder {
         if (SettingValues.image) {
             Intent myIntent = new Intent(contextActivity, MediaView.class);
             myIntent.putExtra(MediaView.SUBREDDIT, submission.getSubredditName());
-            String url;
             String previewUrl;
-            url = submission.getUrl();
+            String url = submission.getUrl();
 
             if (baseView != null
                     && baseView.lq
@@ -430,18 +431,18 @@ public class PopulateNewsViewHolder {
         final Drawable sub =
                 ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.sub, null);
         Drawable saved =
-                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.iconstarfilled,
+                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.star,
                         null);
         Drawable hide = ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.hide, null);
         final Drawable report =
                 ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.report, null);
         Drawable copy =
-                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.ic_content_copy,
+                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.copy,
                         null);
         final Drawable readLater =
                 ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.save, null);
         Drawable open =
-                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.openexternal, null);
+                ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.open_external, null);
         Drawable link = ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.link, null);
         Drawable reddit =
                 ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.commentchange,
@@ -449,22 +450,22 @@ public class PopulateNewsViewHolder {
         Drawable filter =
                 ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.filter, null);
 
-        profile.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        sub.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        saved.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        hide.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        report.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        copy.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        open.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        link.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        reddit.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        readLater.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        filter.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        profile.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        sub.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        saved.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        hide.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        report.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        copy.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        open.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        link.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        reddit.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        readLater.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        filter.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
 
         ta.recycle();
 
         final BottomSheet.Builder b =
-                new BottomSheet.Builder(mContext).title(Html.fromHtml(submission.getTitle()));
+                new BottomSheet.Builder(mContext).title(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
 
         final boolean isReadLater = mContext instanceof PostReadLater;
@@ -657,17 +658,17 @@ public class PopulateNewsViewHolder {
                                                     e.apply();
                                                 }
                                                 if (chosen.length > 4) {
+                                                    String s = (baseSub + ":" + flair)
+                                                            .toLowerCase(Locale.ENGLISH).trim();
                                                     if (chosen[4] && chosen[4] != oldChosen[4]) {
-                                                        SettingValues.flairFilters.add((baseSub + ":" + flair)
-                                                                .toLowerCase(Locale.ENGLISH).trim());
+                                                        SettingValues.flairFilters.add(s);
                                                         e.putStringSet(
                                                                 SettingValues.PREF_FLAIR_FILTERS,
                                                                 SettingValues.flairFilters);
                                                         e.apply();
                                                         filtered = true;
                                                     } else if (!chosen[4] && chosen[4] != oldChosen[4]) {
-                                                        SettingValues.flairFilters.remove((baseSub + ":" + flair)
-                                                                .toLowerCase(Locale.ENGLISH).trim());
+                                                        SettingValues.flairFilters.remove(s);
                                                         e.putStringSet(
                                                                 SettingValues.PREF_FLAIR_FILTERS,
                                                                 SettingValues.flairFilters);
@@ -724,7 +725,7 @@ public class PopulateNewsViewHolder {
                                     Snackbar.LENGTH_SHORT);
                             View view = s.getView();
                             TextView tv = view.findViewById(
-                                    android.support.design.R.id.snackbar_text);
+                                    com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.setAction(R.string.btn_undo, new View.OnClickListener() {
                                 @Override
@@ -734,13 +735,13 @@ public class PopulateNewsViewHolder {
                                             "Removed from read later", Snackbar.LENGTH_SHORT);
                                     View view2 = s2.getView();
                                     TextView tv2 = view2.findViewById(
-                                            android.support.design.R.id.snackbar_text);
+                                            com.google.android.material.R.id.snackbar_text);
                                     tv2.setTextColor(Color.WHITE);
                                     s2.show();
                                 }
                             });
                             if (NetworkUtil.isConnected(mContext)) {
-                                new CommentCacheAsync(Arrays.asList(submission), mContext,
+                                new CommentCacheAsync(Collections.singletonList(submission), mContext,
                                         CommentCacheAsync.SAVED_SUBMISSIONS,
                                         new boolean[]{true, true}).executeOnExecutor(
                                         AsyncTask.THREAD_POOL_EXECUTOR);
@@ -760,7 +761,7 @@ public class PopulateNewsViewHolder {
                                                 Snackbar.LENGTH_SHORT);
                                 View view2 = s2.getView();
                                 TextView tv2 = view2.findViewById(
-                                        android.support.design.R.id.snackbar_text);
+                                        com.google.android.material.R.id.snackbar_text);
                                 tv2.setTextColor(Color.WHITE);
                                 s2.setAction(R.string.btn_undo, new View.OnClickListener() {
                                     @Override
@@ -775,7 +776,7 @@ public class PopulateNewsViewHolder {
                                                 Snackbar.LENGTH_SHORT);
                                 View view2 = s2.getView();
                                 TextView tv2 = view2.findViewById(
-                                        android.support.design.R.id.snackbar_text);
+                                        com.google.android.material.R.id.snackbar_text);
                                 s2.show();
                             }
                             OfflineSubreddit.newSubreddit(CommentCacheAsync.SAVED_SUBMISSIONS)
@@ -784,7 +785,7 @@ public class PopulateNewsViewHolder {
                         }
                         break;
                     case 4:
-                        Reddit.defaultShareText(Html.fromHtml(submission.getTitle()).toString(),
+                        Reddit.defaultShareText(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(),
                                 StringEscapeUtils.escapeHtml4(submission.getUrl()), mContext);
                         break;
                     case 12:
@@ -830,8 +831,7 @@ public class PopulateNewsViewHolder {
                         new AsyncTask<Void, Void, Ruleset>() {
                             @Override
                             protected Ruleset doInBackground(Void... voids) {
-                                Ruleset rules = Authentication.reddit.getRules(submission.getSubredditName());
-                                return rules;
+                                return Authentication.reddit.getRules(submission.getSubredditName());
                             }
 
                             @Override
@@ -869,14 +869,16 @@ public class PopulateNewsViewHolder {
                         reportDialog.show();
                         break;
                     case 8:
-                        Reddit.defaultShareText(Html.fromHtml(submission.getTitle()).toString(),
+                        Reddit.defaultShareText(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(),
                                 "https://reddit.com" + submission.getPermalink(), mContext);
                         break;
                     case 6: {
-                        ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(
-                                Context.CLIPBOARD_SERVICE);
+                        ClipboardManager clipboard = ContextCompat.getSystemService(mContext,
+                                ClipboardManager.class);
                         ClipData clip = ClipData.newPlainText("Link", submission.getUrl());
-                        clipboard.setPrimaryClip(clip);
+                        if (clipboard != null) {
+                            clipboard.setPrimaryClip(clip);
+                        }
                         Toast.makeText(mContext, R.string.submission_link_copied,
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -901,34 +903,28 @@ public class PopulateNewsViewHolder {
                                                         .toString()
                                                         .substring(showText.getSelectionStart(),
                                                                 showText.getSelectionEnd());
+                                                ClipboardManager clipboard =
+                                                        ContextCompat.getSystemService(mContext,
+                                                                ClipboardManager.class);
+                                                ClipData clip;
                                                 if (!selected.isEmpty()) {
-                                                    ClipboardManager clipboard =
-                                                            (ClipboardManager) mContext.getSystemService(
-                                                                    Context.CLIPBOARD_SERVICE);
-                                                    ClipData clip =
-                                                            ClipData.newPlainText("Selftext",
-                                                                    selected);
-                                                    clipboard.setPrimaryClip(clip);
+                                                    clip = ClipData.newPlainText("Selftext",
+                                                            selected);
 
-                                                    Toast.makeText(mContext,
-                                                            R.string.submission_comment_copied,
-                                                            Toast.LENGTH_SHORT).show();
                                                 } else {
-                                                    ClipboardManager clipboard =
-                                                            (ClipboardManager) mContext.getSystemService(
-                                                                    Context.CLIPBOARD_SERVICE);
-                                                    ClipData clip =
-                                                            ClipData.newPlainText("Selftext",
-                                                                    Html.fromHtml(
-                                                                            submission.getTitle()
-                                                                                    + "\n\n"
-                                                                                    + submission.getSelftext()));
-                                                    clipboard.setPrimaryClip(clip);
+                                                    clip = ClipData.newPlainText("Selftext",
+                                                            HtmlCompat.fromHtml(
+                                                                    submission.getTitle()
+                                                                            + "\n\n"
+                                                                            + submission.getSelftext(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
-                                                    Toast.makeText(mContext,
-                                                            R.string.submission_comment_copied,
-                                                            Toast.LENGTH_SHORT).show();
                                                 }
+                                                if (clipboard != null) {
+                                                    clipboard.setPrimaryClip(clip);
+                                                }
+                                                Toast.makeText(mContext,
+                                                        R.string.submission_comment_copied,
+                                                        Toast.LENGTH_SHORT).show();
 
                                             }
                                         })
@@ -938,16 +934,19 @@ public class PopulateNewsViewHolder {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 ClipboardManager clipboard =
-                                                        (ClipboardManager) mContext.getSystemService(
-                                                                Context.CLIPBOARD_SERVICE);
+                                                        ContextCompat.getSystemService(mContext,
+                                                                ClipboardManager.class);
                                                 ClipData clip = ClipData.newPlainText("Selftext",
-                                                        Html.fromHtml(submission.getTitle()
-                                                                + "\n\n"
-                                                                + submission.getSelftext()));
-                                                clipboard.setPrimaryClip(clip);
+                                                        StringEscapeUtils.unescapeHtml4(
+                                                                submission.getTitle()
+                                                                        + "\n\n"
+                                                                        + submission.getSelftext()));
+                                                if (clipboard != null) {
+                                                    clipboard.setPrimaryClip(clip);
+                                                }
 
                                                 Toast.makeText(mContext,
-                                                        R.string.submission_comment_copied,
+                                                        R.string.submission_text_copied,
                                                         Toast.LENGTH_SHORT).show();
                                             }
                                         })
@@ -970,7 +969,7 @@ public class PopulateNewsViewHolder {
                 Snackbar snack = Snackbar.make(recyclerview, R.string.submission_info_unhidden,
                         Snackbar.LENGTH_LONG);
                 View view = snack.getView();
-                TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 snack.show();
             } else {
@@ -1009,7 +1008,7 @@ public class PopulateNewsViewHolder {
                             }
                         });
                 View view = snack.getView();
-                TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 snack.show();
             }
@@ -1130,7 +1129,7 @@ public class PopulateNewsViewHolder {
                             Snackbar.make(holder.itemView, mContext.getString(R.string.offline_msg),
                                     Snackbar.LENGTH_SHORT);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 } else {
@@ -1178,7 +1177,7 @@ public class PopulateNewsViewHolder {
             Snackbar s = Snackbar.make(contextView, R.string.msg_report_sent, Snackbar.LENGTH_SHORT);
             View view = s.getView();
             TextView tv = view.findViewById(
-                    android.support.design.R.id.snackbar_text);
+                    com.google.android.material.R.id.snackbar_text);
             tv.setTextColor(Color.WHITE);
             s.show();
         }

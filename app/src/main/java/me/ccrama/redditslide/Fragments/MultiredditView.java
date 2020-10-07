@@ -6,27 +6,27 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.view.MarginLayoutParamsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.itemanimators.AlphaInAnimator;
 import com.mikepenz.itemanimators.SlideUpAlphaAnimator;
 
-import me.ccrama.redditslide.Activities.Search;
 import net.dean.jraw.models.MultiReddit;
 import net.dean.jraw.models.MultiSubreddit;
 import net.dean.jraw.models.Submission;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import me.ccrama.redditslide.Activities.Search;
 import me.ccrama.redditslide.Activities.Submit;
 import me.ccrama.redditslide.Adapters.MultiredditAdapter;
 import me.ccrama.redditslide.Adapters.MultiredditPosts;
@@ -213,7 +214,7 @@ public class MultiredditView extends Fragment implements SubmissionDisplay {
                         };*/
                         Snackbar s = Snackbar.make(rv, getResources().getString(R.string.posts_hidden_forever), Snackbar.LENGTH_LONG);
                         View view = s.getView();
-                        TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                        TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                         tv.setTextColor(Color.WHITE);
                         s.show();
 
@@ -234,9 +235,7 @@ public class MultiredditView extends Fragment implements SubmissionDisplay {
          */
         if (SettingValues.defaultCardView == CreateCardView.CardEnum.LIST) {
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                params.setMarginStart(0);
-            }
+            MarginLayoutParamsCompat.setMarginStart(params, 0);
             rv.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
             refreshLayout.setLayoutParams(params);
         }
@@ -288,7 +287,7 @@ public class MultiredditView extends Fragment implements SubmissionDisplay {
                 fab.show();
             }
 
-            rv.addOnScrollListener(new ToolbarScrollHideHandler((Toolbar) (getActivity()).findViewById(R.id.toolbar), getActivity().findViewById(R.id.header)) {
+            rv.addOnScrollListener(new ToolbarScrollHideHandler((getActivity()).findViewById(R.id.toolbar), getActivity().findViewById(R.id.header)) {
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
@@ -296,8 +295,7 @@ public class MultiredditView extends Fragment implements SubmissionDisplay {
                     visibleItemCount = rv.getLayoutManager().getChildCount();
                     totalItemCount = rv.getLayoutManager().getItemCount();
 
-                    int[] firstVisibleItems;
-                    firstVisibleItems = ((CatchStaggeredGridLayoutManager) rv.getLayoutManager()).findFirstVisibleItemPositions(null);
+                    int[] firstVisibleItems = ((CatchStaggeredGridLayoutManager) rv.getLayoutManager()).findFirstVisibleItemPositions(null);
                     if (firstVisibleItems != null && firstVisibleItems.length > 0) {
                         for (int firstVisibleItem : firstVisibleItems) {
                             pastVisiblesItems = firstVisibleItem;

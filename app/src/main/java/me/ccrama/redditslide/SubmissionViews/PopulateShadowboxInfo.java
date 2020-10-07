@@ -3,19 +3,15 @@ package me.ccrama.redditslide.SubmissionViews;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.text.Html;
-import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -23,16 +19,31 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.*;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.cocosw.bottomsheet.BottomSheet;
+import com.google.android.material.snackbar.Snackbar;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
-import net.dean.jraw.models.*;
+import net.dean.jraw.models.Comment;
+import net.dean.jraw.models.CommentNode;
+import net.dean.jraw.models.DistinguishedStatus;
+import net.dean.jraw.models.Ruleset;
+import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.SubredditRule;
+import net.dean.jraw.models.VoteDirection;
 
 import java.util.Locale;
 
@@ -66,7 +77,7 @@ public class PopulateShadowboxInfo {
             else if (s.getDistinguishedStatus() == DistinguishedStatus.ADMIN)
                 distingush = "[A]";
 
-            title.setText(Html.fromHtml(s.getTitle()));
+            title.setText(HtmlCompat.fromHtml(s.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
             String spacer = c.getString(R.string.submission_properties_seperator);
             SpannableStringBuilder titleString = new SpannableStringBuilder();
@@ -282,12 +293,12 @@ public class PopulateShadowboxInfo {
             SpannableStringBuilder commentTitle = new SpannableStringBuilder();
             SpannableStringBuilder level = new SpannableStringBuilder();
             if(!node.isTopLevel()){
-                level.append("["+node.getDepth() + "] ");
+                level.append("[").append(String.valueOf(node.getDepth())).append("] ");
                 level.setSpan(new RelativeSizeSpan(0.7f),0, level.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 commentTitle.append(level);
             }
-            commentTitle.append(Html.fromHtml(s.getDataNode().get("body_html").asText().trim()));
+            commentTitle.append(HtmlCompat.fromHtml(s.getDataNode().get("body_html").asText().trim(), HtmlCompat.FROM_HTML_MODE_LEGACY));
             title.setTextHtml(commentTitle);
             title.setMaxLines(3);
 
@@ -484,23 +495,23 @@ public class PopulateShadowboxInfo {
         Drawable profile = mContext.getResources().getDrawable(R.drawable.profile);
         final Drawable sub = mContext.getResources().getDrawable(R.drawable.sub);
         final Drawable report = mContext.getResources().getDrawable(R.drawable.report);
-        Drawable copy = mContext.getResources().getDrawable(R.drawable.ic_content_copy);
-        Drawable open = mContext.getResources().getDrawable(R.drawable.openexternal);
+        Drawable copy = mContext.getResources().getDrawable(R.drawable.copy);
+        Drawable open = mContext.getResources().getDrawable(R.drawable.open_external);
         Drawable link = mContext.getResources().getDrawable(R.drawable.link);
         Drawable reddit = mContext.getResources().getDrawable(R.drawable.commentchange);
 
-        profile.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        sub.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        report.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        copy.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        open.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        link.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        reddit.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        profile.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        sub.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        report.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        copy.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        open.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        link.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        reddit.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
 
         ta.recycle();
 
         BottomSheet.Builder b = new BottomSheet.Builder(mContext)
-                .title(Html.fromHtml(submission.getTitle()));
+                .title(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
 
         if (Authentication.didOnline) {
@@ -579,8 +590,7 @@ public class PopulateShadowboxInfo {
                                 new AsyncTask<Void, Void, Ruleset>() {
                                     @Override
                                     protected Ruleset doInBackground(Void... voids) {
-                                        Ruleset rules = Authentication.reddit.getRules(submission.getSubredditName());
-                                        return rules;
+                                        return Authentication.reddit.getRules(submission.getSubredditName());
                                     }
 
                                     @Override
@@ -625,9 +635,12 @@ public class PopulateShadowboxInfo {
                                 }
                                 break;
                             case 6: {
-                                ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                                ClipboardManager clipboard = ContextCompat.getSystemService(mContext,
+                                        ClipboardManager.class);
                                 ClipData clip = ClipData.newPlainText("Link", submission.getUrl());
-                                clipboard.setPrimaryClip(clip);
+                                if (clipboard != null) {
+                                    clipboard.setPrimaryClip(clip);
+                                }
                                 Toast.makeText(mContext, R.string.submission_link_copied, Toast.LENGTH_SHORT).show();
                             }
                             break;
@@ -663,7 +676,7 @@ public class PopulateShadowboxInfo {
             Snackbar s = Snackbar.make(contextView, R.string.msg_report_sent, Snackbar.LENGTH_SHORT);
             View view = s.getView();
             TextView tv = view.findViewById(
-                    android.support.design.R.id.snackbar_text);
+                    com.google.android.material.R.id.snackbar_text);
             tv.setTextColor(Color.WHITE);
             s.show();
         }

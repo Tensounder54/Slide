@@ -6,8 +6,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.support.v7.widget.CardView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +13,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.cardview.widget.CardView;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
 import java.util.ArrayList;
 
@@ -83,6 +84,12 @@ public class CreateCardView {
                         .setMargins(EIGHT_DP_X * 2, EIGHT_DP_Y, EIGHT_DP_X, EIGHT_DP_Y);
                 v.findViewById(R.id.innerrelative).setPadding(0, EIGHT_DP_Y, 0, 0);
             }
+        }
+
+        if (SettingValues.noThumbnails) {
+            final int SQUARE_THUMBNAIL_SIZE = 0;
+            thumbImage.getLayoutParams().height = Reddit.dpToPxVertical(SQUARE_THUMBNAIL_SIZE);
+            thumbImage.getLayoutParams().width = Reddit.dpToPxHorizontal(SQUARE_THUMBNAIL_SIZE);
         }
 
         doHideObjects(v);
@@ -188,7 +195,7 @@ public class CreateCardView {
     public static void colorCard(String sec, View v, String subToMatch, boolean secondary) {
         resetColorCard(v);
         if ((SettingValues.colorBack && !SettingValues.colorSubName && Palette.getColor(sec) != Palette.getDefaultColor()) || (subToMatch.equals("nomatching") && (SettingValues.colorBack && !SettingValues.colorSubName && Palette.getColor(sec) != Palette.getDefaultColor()))) {
-            if (!secondary && !SettingValues.colorEverywhere || secondary) {
+            if (secondary || !SettingValues.colorEverywhere) {
                 ((CardView) v.findViewById(R.id.card)).setCardBackgroundColor(Palette.getColor(sec));
                 v.setTag(v.getId(), "color");
                 resetColor(getViewsByTag((ViewGroup) v, "tint"));
@@ -225,6 +232,9 @@ public class CreateCardView {
     }
 
     public static View setBigPicEnabled(Boolean b, ViewGroup parent) {
+        SettingValues.prefs.edit().putBoolean("noThumbnails", b).apply();
+        SettingValues.noThumbnails = false;
+
         SettingValues.prefs.edit().putBoolean("bigPicEnabled", b).apply();
         SettingValues.bigPicEnabled = b;
 
@@ -235,11 +245,27 @@ public class CreateCardView {
     }
 
     public static View setBigPicCropped(Boolean b, ViewGroup parent) {
+        SettingValues.prefs.edit().putBoolean("noThumbnails", b).apply();
+        SettingValues.noThumbnails = false;
+
         SettingValues.prefs.edit().putBoolean("bigPicCropped", b).apply();
         SettingValues.bigPicCropped = b;
 
         SettingValues.prefs.edit().putBoolean("bigPicEnabled", b).apply();
         SettingValues.bigPicEnabled = b;
+
+        return CreateView(parent);
+    }
+
+    public static View setNoThumbnails(Boolean b, ViewGroup parent) {
+        SettingValues.prefs.edit().putBoolean("bigPicEnabled", b).apply();
+        SettingValues.bigPicEnabled = false;
+
+        SettingValues.prefs.edit().putBoolean("bigPicCropped", false).apply();
+        SettingValues.bigPicCropped = false;
+
+        SettingValues.prefs.edit().putBoolean("noThumbnails", b).apply();
+        SettingValues.noThumbnails = b;
 
         return CreateView(parent);
     }

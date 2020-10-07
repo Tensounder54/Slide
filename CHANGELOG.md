@@ -1,3 +1,55 @@
+6.5 / 2020-07-12
+==================
+* Huge Video rewrite, thank you to @timawesomeness! Contains support for DASH videos, uses newer ExoPlayer code, and cleans up some older video sites
+* Support for mod locking of individual comments
+* Added option to save photos to a manual folder (thanks to @Archeidos)
+* Updated Fastlane metadata for F-Droid builds (thanks to @obar)
+* Fixed offline mode crash when no subreddits were cached
+* Fixed posting to profiles with more than 20 characters (thanks to @LostGhost1)
+* Added an always show FAB option in Settings (thanks to @darshan099)
+* Graceful handling of submission loading errors with new "try again" button (thanks to @ctbur)
+* Fix OnePlus and Huawei media scanner intents, will show images in gallery on these devices (thanks to @Rexee)
+* Fixed handling of intent links in internal browser
+* Fix toolbox encoded chars in removal reason text
+* Fixed startup issue on some devices
+
+6.4 / 2020-05-24
+==================
+  * Support for redgifs.com
+  * Banner images in subreddit sidebars
+  * Fixes to Imgur upload process
+  * Translation updates
+  * Updated accessibility labels
+
+6.3 / 2020-02-17
+==================
+  * Reduce data usage on metered connections
+  * Option to hide the download button in media views
+  * New back button behavior option to go to first subreddit
+
+6.2.2 / 2019-08-06
+==================
+  * Fixes an issue with Twitter links loading in-app
+  * Improves filter behavior with a large number of saved filters
+
+6.2.1 / 2019-07-25
+==================
+  * Improvements to behavior with Android Pie keyboard focus
+  * Accessibility improvements to app buttons
+  * Fixed crash with "Remove with Reason"
+  * Fixed various issues with new Reddit flairs
+
+6.2 / 2019-04-05
+==================
+  * Added support for Reddit 2-Factor Authentication for login
+  * Smoother animation interpolator
+  * Translation updates
+  * Better support for other string encodings in Reader mode
+  * Removed "Best" as default sorting option, and only display it on the frontpage subreddit
+  * Fixed an issues where Gfycats wouldn't load if they had a hyphen in the URL
+  * Fixed i.redd.it and other direct GIF links not loading internally
+  * Initial round of Toolbox bug fixes
+
 6.0.1 / 2018-11-30
 ==================
   * Adaptive icon by Michael Cook (@cookicons)

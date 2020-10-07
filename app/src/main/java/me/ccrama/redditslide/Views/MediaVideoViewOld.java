@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.MediaController;
-import android.widget.SeekBar;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -354,7 +353,6 @@ public class MediaVideoViewOld extends SurfaceView
         mVideoWidth = 0;
         mVideoHeight = 0;
         getHolder().addCallback(mSHCallback);
-        getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();

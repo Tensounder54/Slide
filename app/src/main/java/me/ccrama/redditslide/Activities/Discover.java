@@ -2,21 +2,22 @@ package me.ccrama.redditslide.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.animation.LinearInterpolator;
 
+import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.tabs.TabLayout;
 
 import me.ccrama.redditslide.ColorPreferences;
 import me.ccrama.redditslide.Fragments.SubredditListView;
@@ -98,7 +99,7 @@ public class Discover extends BaseActivityAnim {
         ViewPager pager = (ViewPager) findViewById(R.id.content_view);
         pager.setAdapter(new OverviewPagerAdapter(getSupportFragmentManager()));
         tabs.setupWithViewPager(pager);
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -123,7 +124,7 @@ public class Discover extends BaseActivityAnim {
     public class OverviewPagerAdapter extends FragmentStatePagerAdapter {
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @Override

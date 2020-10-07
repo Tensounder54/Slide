@@ -14,15 +14,13 @@
 
         android:gravity="center">
 
-        <me.ccrama.redditslide.Views.MediaVideoView
+        <me.ccrama.redditslide.Views.ExoVideoView
             android:id="@+id/gif"
             android:layout_width="match_parent"
-
-
             android:layout_height="match_parent"
             android:layout_centerInParent="true">
 
-        </me.ccrama.redditslide.Views.MediaVideoView>
+        </me.ccrama.redditslide.Views.ExoVideoView>
 
         <FrameLayout
             android:id="@+id/placeholder"
@@ -57,7 +55,7 @@
             android:layout_height="56dp"
             android:theme="@style/Ripple.List"
             android:padding="15dp"
-            app:srcCompat="@drawable/openexternal"
+            app:srcCompat="@drawable/open_external"
             android:tint="@color/white" />
 
         <ImageView

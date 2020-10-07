@@ -10,15 +10,16 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Submission;
@@ -54,6 +55,7 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private final int LOADING_SPINNER = 5;
     private final int NO_MORE         = 3;
     private final int SPACER          = 6;
+    private final int ERROR = 7;
     SubmissionDisplay displayer;
 
     public SubmissionAdapter(Activity context, SubredditPosts dataSet, RecyclerView listView,
@@ -109,16 +111,16 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         } else if (!dataSet.posts.isEmpty()) {
             position -= (1);
         }
-        if (position == dataSet.posts.size()
-                && !dataSet.posts.isEmpty()
-                && !dataSet.offline
-                && !dataSet.nomore) {
-            return LOADING_SPINNER;
-        } else if (position == dataSet.posts.size() && (dataSet.offline || dataSet.nomore)) {
-            return NO_MORE;
+        if (position == dataSet.posts.size()) {
+            if (dataSet.error) {
+                return ERROR;
+            } else if (!dataSet.posts.isEmpty() && !dataSet.offline && !dataSet.nomore) {
+                return LOADING_SPINNER;
+            } else if (dataSet.offline || dataSet.nomore) {
+                return NO_MORE;
+            }
         }
-        int SUBMISSION = 1;
-        return SUBMISSION;
+        return 1;
     }
 
     int tag = 1;
@@ -139,6 +141,17 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         } else if (i == NO_MORE) {
             View v = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.nomoreposts, viewGroup, false);
+            return new SubmissionFooterViewHolder(v);
+        } else if (i == ERROR) {
+            View v = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.errorloadingcontent, viewGroup, false);
+            v.findViewById(R.id.retry).setOnClickListener(new OnSingleClickListener() {
+                @Override
+                public void onSingleClick(View v) {
+                    dataSet.loadMore(v.getContext(),
+                            displayer, false, dataSet.subreddit);
+                }
+            });
             return new SubmissionFooterViewHolder(v);
         } else {
             View v = CreateCardView.CreateView(viewGroup);
@@ -323,7 +336,7 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                                                                });
                                                                View view = s.getView();
                                                                TextView tv = view.findViewById(
-                                                                       android.support.design.R.id.snackbar_text);
+                                                                       com.google.android.material.R.id.snackbar_text);
                                                                tv.setTextColor(Color.WHITE);
                                                                s.show();
                                                            }
@@ -395,13 +408,13 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
 
-    public class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
+    public static class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
         public SubmissionFooterViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }
@@ -435,7 +448,7 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         public void run() {
                             View view = s.getView();
                             TextView tv = view.findViewById(
-                                    android.support.design.R.id.snackbar_text);
+                                    com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -453,7 +466,7 @@ public class SubmissionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         public void run() {
                             View view = s.getView();
                             TextView tv = view.findViewById(
-                                    android.support.design.R.id.snackbar_text);
+                                    com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }

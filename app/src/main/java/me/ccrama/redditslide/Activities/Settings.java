@@ -9,8 +9,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -29,6 +27,9 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.google.common.base.Strings;
 
@@ -38,14 +39,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import me.ccrama.redditslide.Authentication;
+import me.ccrama.redditslide.BuildConfig;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
-import me.ccrama.redditslide.FDroid;
-import me.ccrama.redditslide.Fragments.*;
+import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
+import me.ccrama.redditslide.Fragments.ManageOfflineContentFragment;
+import me.ccrama.redditslide.Fragments.SettingsCommentsFragment;
+import me.ccrama.redditslide.Fragments.SettingsDataFragment;
+import me.ccrama.redditslide.Fragments.SettingsFontFragment;
+import me.ccrama.redditslide.Fragments.SettingsFragment;
+import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
+import me.ccrama.redditslide.Fragments.SettingsHandlingFragment;
+import me.ccrama.redditslide.Fragments.SettingsHistoryFragment;
+import me.ccrama.redditslide.Fragments.SettingsRedditFragment;
+import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.Visuals.Palette;
-import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.NetworkUtil;
 import me.ccrama.redditslide.util.OnSingleClickListener;
 
@@ -88,6 +98,7 @@ public class Settings extends BaseActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESTART_SETTINGS_RESULT) {
             restartActivity();
         }
@@ -287,7 +298,7 @@ public class Settings extends BaseActivity
             }
 
             /* This child is a View and the previous child was a View, remove duplicates */
-            else if (child != null && prev_child_is_View && child.getClass().equals(android.view.View.class)) {
+            else if (child != null && prev_child_is_View && child.getClass() == View.class) {
                 parent.removeView(child);
                 childRemoved = true;
                 i--;
@@ -306,7 +317,7 @@ public class Settings extends BaseActivity
             }
 
             if (child != null && !childRemoved) {
-                prev_child_is_View = child.getClass().equals(android.view.View.class);
+                prev_child_is_View = child.getClass() == View.class;
             }
         }
         return foundText;
@@ -610,13 +621,13 @@ public class Settings extends BaseActivity
             }
         });
 
-        if(FDroid.isFDroid){
+        if(BuildConfig.isFDroid){
             ((TextView) findViewById(R.id.settings_child_donatetext)).setText("Donate via PayPal");
         }
         findViewById(R.id.settings_child_support).setOnClickListener(new OnSingleClickListener() {
             @Override
             public void onSingleClick(View v) {
-                if(FDroid.isFDroid){
+                if(BuildConfig.isFDroid){
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=56FKCCYLX7L72"));
                     startActivity(browserIntent);
                 } else {
@@ -660,8 +671,8 @@ public class Settings extends BaseActivity
     }
 
     @Override
-    public void onFolderSelection(@NonNull FolderChooserDialogCreate dialog, @NonNull File folder) {
-        mSettingsGeneralFragment.onFolderSelection(dialog, folder);
+    public void onFolderSelection(@NonNull FolderChooserDialogCreate dialog, @NonNull File folder, boolean isSaveToLocation) {
+        mSettingsGeneralFragment.onFolderSelection(dialog, folder, false);
     }
 
     @Override

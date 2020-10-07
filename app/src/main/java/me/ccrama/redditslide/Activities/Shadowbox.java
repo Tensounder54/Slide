@@ -1,10 +1,11 @@
 package me.ccrama.redditslide.Activities;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import net.dean.jraw.models.Submission;
 
@@ -78,7 +79,7 @@ public class Shadowbox extends FullScreenActivity implements SubmissionDisplay {
         submissionsPager = new OverviewPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(submissionsPager);
         pager.setCurrentItem(firstPage);
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -153,7 +154,7 @@ public class Shadowbox extends FullScreenActivity implements SubmissionDisplay {
     public class OverviewPagerAdapter extends FragmentStatePagerAdapter {
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
         }
 
@@ -179,7 +180,6 @@ public class Shadowbox extends FullScreenActivity implements SubmissionDisplay {
                 case VREDDIT_DIRECT:
                 case VREDDIT_REDIRECT:
                 case LINK:
-                case VID_ME:
                 case STREAMABLE:
                 case VIDEO: {
                     f = new MediaFragment();
@@ -207,7 +207,8 @@ public class Shadowbox extends FullScreenActivity implements SubmissionDisplay {
                     f.setArguments(args);
                 }
                 break;
-                case SELF: {
+                case SELF:
+                case NONE: {
                     if (subredditPosts.getPosts().get(i).getSelftext().isEmpty()) {
                         f = new TitleFull();
                         Bundle args = new Bundle();
@@ -241,24 +242,6 @@ public class Shadowbox extends FullScreenActivity implements SubmissionDisplay {
                     args.putString("sub", subreddit);
 
                     f.setArguments(args);
-                }
-                break;
-                case NONE: {
-                    if (subredditPosts.getPosts().get(i).getSelftext().isEmpty()) {
-                        f = new TitleFull();
-                        Bundle args = new Bundle();
-                        args.putInt("page", i);
-                        args.putString("sub", subreddit);
-
-                        f.setArguments(args);
-                    } else {
-                        f = new SelftextFull();
-                        Bundle args = new Bundle();
-                        args.putInt("page", i);
-                        args.putString("sub", subreddit);
-
-                        f.setArguments(args);
-                    }
                 }
                 break;
             }

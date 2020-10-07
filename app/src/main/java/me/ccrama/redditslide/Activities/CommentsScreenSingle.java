@@ -6,13 +6,14 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
@@ -73,7 +74,6 @@ public class CommentsScreenSingle extends BaseActivityAnim {
 
             switch (keyCode) {
                 case KeyEvent.KEYCODE_VOLUME_UP:
-                    return ((CommentPage) comments.getCurrentFragment()).onKeyDown(keyCode, event);
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
                     return ((CommentPage) comments.getCurrentFragment()).onKeyDown(keyCode, event);
                 default:
@@ -87,7 +87,7 @@ public class CommentsScreenSingle extends BaseActivityAnim {
     public void onCreate(Bundle savedInstance) {
         disableSwipeBackLayout();
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        getWindow().getDecorView().setBackgroundDrawable(null);
+        getWindow().getDecorView().setBackground(null);
         super.onCreate(savedInstance);
         applyColorTheme();
         setContentView(R.layout.activity_slide);
@@ -179,7 +179,7 @@ public class CommentsScreenSingle extends BaseActivityAnim {
         pager.setAdapter(comments);
         pager.setBackgroundColor(Color.TRANSPARENT);
         pager.setCurrentItem(1);
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset,
                     int positionOffsetPixels) {
@@ -281,7 +281,7 @@ public class CommentsScreenSingle extends BaseActivityAnim {
         public  BlankFragment blankPage;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         public Fragment getCurrentFragment() {
@@ -290,7 +290,7 @@ public class CommentsScreenSingle extends BaseActivityAnim {
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (getCurrentFragment() != object) {
+            if (mCurrentFragment != object) {
                 mCurrentFragment = (Fragment) object;
             }
             super.setPrimaryItem(container, position, object);
@@ -305,7 +305,7 @@ public class CommentsScreenSingle extends BaseActivityAnim {
 
                 Fragment f = new CommentPage();
                 Bundle args = new Bundle();
-                if (name.contains("t3_")) name = name.substring(3, name.length());
+                if (name.contains("t3_")) name = name.substring(3);
 
                 args.putString("id", name);
                 args.putString("context", context);

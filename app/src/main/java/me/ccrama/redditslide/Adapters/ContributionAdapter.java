@@ -14,9 +14,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -30,9 +27,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.cocosw.bottomsheet.BottomSheet;
 import com.devspark.robototextview.RobotoTypefaces;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Comment;
@@ -134,7 +135,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     }
 
-    public class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
+    public static class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
         public SubmissionFooterViewHolder(View itemView) {
             super(itemView);
         }
@@ -158,7 +159,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         public void run() {
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -175,7 +176,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         public void run() {
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -209,7 +210,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     final View dialoglayout = inflater.inflate(R.layout.postmenu, null);
                     AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(mContext);
                     final TextView title = dialoglayout.findViewById(R.id.title);
-                    title.setText(Html.fromHtml(submission.getTitle()));
+                    title.setText(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
                     ((TextView) dialoglayout.findViewById(R.id.userpopup)).setText("/u/" + submission.getAuthor());
                     ((TextView) dialoglayout.findViewById(R.id.subpopup)).setText("/r/" + submission.getSubredditName());
@@ -324,7 +325,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                             });
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
 
@@ -441,7 +442,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 // Add silver, gold, platinum icons and counts in that order
                 if (comment.getTimesSilvered() > 0) {
                     final String timesSilvered = (comment.getTimesSilvered() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesSilvered());
+                            : "\u200Ax" + comment.getTimesSilvered();
                     SpannableStringBuilder silvered =
                             new SpannableStringBuilder("\u00A0★" + timesSilvered + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.silver);
@@ -456,7 +457,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
                 if (comment.getTimesGilded() > 0) {
                     final String timesGilded = (comment.getTimesGilded() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesGilded());
+                            : "\u200Ax" + comment.getTimesGilded();
                     SpannableStringBuilder gilded =
                             new SpannableStringBuilder("\u00A0★" + timesGilded + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.gold);
@@ -471,7 +472,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
                 if (comment.getTimesPlatinized() > 0) {
                     final String timesPlatinized = (comment.getTimesPlatinized() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesPlatinized());
+                            : "\u200Ax" + comment.getTimesPlatinized();
                     SpannableStringBuilder platinized =
                             new SpannableStringBuilder("\u00A0★" + timesPlatinized + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.platinum);
@@ -488,9 +489,9 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 holder.gild.setVisibility(View.GONE);
 
             if (comment.getSubmissionTitle() != null)
-                holder.title.setText(Html.fromHtml(comment.getSubmissionTitle()));
+                holder.title.setText(HtmlCompat.fromHtml(comment.getSubmissionTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
             else
-                holder.title.setText(Html.fromHtml(comment.getAuthor()));
+                holder.title.setText(HtmlCompat.fromHtml(comment.getAuthor(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -516,7 +517,7 @@ public class ContributionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }

@@ -1,7 +1,8 @@
 package me.ccrama.redditslide.Toolbox;
 
-import android.support.annotation.ColorInt;
 import android.util.Base64;
+
+import androidx.annotation.ColorInt;
 
 import com.google.android.exoplayer2.util.ColorParser;
 import com.google.gson.JsonDeserializationContext;
@@ -112,7 +113,7 @@ public class Usernotes {
     public void removeNote(String user, Usernote note) {
         if (notes.get(user) != null) {
             notes.get(user).remove(note);
-            if (notes.get(user).size() == 0) { // if we just removed the last note, remove the user too
+            if (notes.get(user).isEmpty()) { // if we just removed the last note, remove the user too
                 notes.remove(user);
             }
         }
@@ -262,7 +263,7 @@ public class Usernotes {
             if (decodedBlob == null) {
                 return null;
             }
-            JsonElement jsonBlob = new JsonParser().parse(decodedBlob);
+            JsonElement jsonBlob = JsonParser.parseString(decodedBlob);
             Map<String, List<Usernote>> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             for (Map.Entry<String, JsonElement> userAndNotes : jsonBlob.getAsJsonObject().entrySet()) {
@@ -309,10 +310,10 @@ public class Usernotes {
         @Override
         public JsonElement serialize(Map<String, List<Usernote>> src, Type srcType, JsonSerializationContext context) {
             Map<String, Map<String, List<Usernote>>> notes = new HashMap<>();
-            for (String user : src.keySet()) {
+            for (Map.Entry<String, List<Usernote>> entry : src.entrySet()) {
                 Map<String, List<Usernote>> newNotes = new HashMap<>();
-                newNotes.put("ns", src.get(user));
-                notes.put(user, newNotes);
+                newNotes.put("ns", entry.getValue());
+                notes.put(entry.getKey(), newNotes);
             }
             String encodedBlob = jsonToBlob(context.serialize(notes).toString());
             return context.serialize(encodedBlob);

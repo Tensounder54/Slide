@@ -1,22 +1,15 @@
 package me.ccrama.redditslide.Activities;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.text.Spannable;
 import android.util.Log;
 import android.view.Gravity;
@@ -31,9 +24,19 @@ import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager.widget.ViewPager;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.tabs.TabLayout;
 
 import net.dean.jraw.models.MultiReddit;
 import net.dean.jraw.models.MultiSubreddit;
@@ -65,6 +68,8 @@ public class MultiredditOverview extends BaseActivityAnim {
 
     public static final String EXTRA_PROFILE = "profile";
     public static final String EXTRA_MULTI = "multi";
+
+    public static Activity multiActivity;
 
     public static MultiReddit          searchMulti;
     public        OverviewPagerAdapter adapter;
@@ -422,6 +427,8 @@ public class MultiredditOverview extends BaseActivityAnim {
     public void onCreate(Bundle savedInstance) {
         overrideSwipeFromAnywhere();
 
+        multiActivity = this;
+
         super.onCreate(savedInstance);
 
         applyColorTheme("");
@@ -651,13 +658,12 @@ public class MultiredditOverview extends BaseActivityAnim {
                             Palette.getDarkerColor(usedArray.get(0).getDisplayName()));
                 }
                 final View header = findViewById(R.id.header);
-                tabs.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager) {
+                tabs.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager) {
                     @Override
                     public void onTabReselected(TabLayout.Tab tab) {
                         super.onTabReselected(tab);
-                        int[] firstVisibleItems;
                         int pastVisiblesItems = 0;
-                        firstVisibleItems =
+                        int[] firstVisibleItems =
                                 ((CatchStaggeredGridLayoutManager) (((MultiredditView) adapter.getCurrentFragment()).rv
                                         .getLayoutManager())).findFirstVisibleItemPositions(null);
                         if (firstVisibleItems != null && firstVisibleItems.length > 0) {
@@ -710,7 +716,7 @@ public class MultiredditOverview extends BaseActivityAnim {
             convertView.findViewById(R.id.color).setBackgroundResource(R.drawable.circle);
             convertView.findViewById(R.id.color)
                     .getBackground()
-                    .setColorFilter(Palette.getColor(subreddit), PorterDuff.Mode.MULTIPLY);
+                    .setColorFilter(new PorterDuffColorFilter(Palette.getColor(subreddit), PorterDuff.Mode.MULTIPLY));
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -726,7 +732,7 @@ public class MultiredditOverview extends BaseActivityAnim {
     public class OverviewPagerAdapter extends FragmentStatePagerAdapter {
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
             pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
                 public void onPageScrolled(int position, float positionOffset,
@@ -781,7 +787,7 @@ public class MultiredditOverview extends BaseActivityAnim {
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (getCurrentFragment() != object) {
+            if (mCurrentFragment != object) {
                 mCurrentFragment = ((Fragment) object);
             }
             super.setPrimaryItem(container, position, object);
@@ -805,6 +811,7 @@ public class MultiredditOverview extends BaseActivityAnim {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 940 && adapter != null && adapter.getCurrentFragment() != null) {
             if (resultCode == RESULT_OK) {
                 LogUtil.v("Doing hide posts");

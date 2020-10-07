@@ -1,8 +1,9 @@
 package me.ccrama.redditslide.Adapters;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
@@ -22,10 +23,10 @@ public class SubredditViewHolder extends RecyclerView.ViewHolder {
     public SubredditViewHolder(View v) {
         super(v);
         color = v.findViewById(R.id.color);
-        name = (TextView) v.findViewById(R.id.name);
+        name = v.findViewById(R.id.name);
         subscribers = v.findViewById(R.id.subscribers);
         subbed = v.findViewById(R.id.subbed);
-        body = (SpoilerRobotoTextView) v.findViewById(R.id.body);
-        overflow = (CommentOverflow) v.findViewById(R.id.overflow);
+        body = v.findViewById(R.id.body);
+        overflow = v.findViewById(R.id.overflow);
     }
 }

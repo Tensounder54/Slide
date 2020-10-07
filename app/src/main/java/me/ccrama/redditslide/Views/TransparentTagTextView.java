@@ -9,14 +9,15 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.widget.TextView;
+
+import androidx.appcompat.widget.AppCompatTextView;
 
 import me.ccrama.redditslide.R;
 
 /**
  * Created by carlos on 3/14/16.
  */
-public class TransparentTagTextView extends TextView {
+public class TransparentTagTextView extends AppCompatTextView {
     Bitmap mMaskBitmap;
     Canvas mMaskCanvas;
     Paint mPaint;
@@ -41,8 +42,8 @@ public class TransparentTagTextView extends TextView {
         mSetBoundsOnSizeAvailable = true;
         mPaint = new Paint();
         super.setTextColor(Color.BLACK);
-        super.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        setBackgroundDrawable(context.getResources().getDrawable(R.drawable.flairback));
+        super.setBackground(new ColorDrawable(Color.TRANSPARENT));
+        setBackground(context.getResources().getDrawable(R.drawable.flairback));
     }
 
 
@@ -50,13 +51,13 @@ public class TransparentTagTextView extends TextView {
     public void resetBackground(Context context) {
         mPaint = new Paint();
         super.setTextColor(Color.BLACK);
-        super.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        super.setBackground(new ColorDrawable(Color.TRANSPARENT));
         backdrop = context.getResources().getDrawable(R.drawable.flairback);
-        setBackgroundDrawable(backdrop);
+        setBackground(backdrop);
     }
 
     @Override
-    public void setBackgroundDrawable(Drawable bg) {
+    public void setBackground(Drawable bg) {
         if(bg != null) {
             mBackground = bg;
             int w = bg.getIntrinsicWidth();
@@ -81,7 +82,7 @@ public class TransparentTagTextView extends TextView {
 
     @Override
     public void setBackgroundColor(int color) {
-        setBackgroundDrawable(new ColorDrawable(color));
+        setBackground(new ColorDrawable(color));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class TransparentTagTextView extends TextView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.setBackgroundDrawable(backdrop);
+        super.setBackground(backdrop);
 
         // Draw background
         mBackground.draw(mBackgroundCanvas);

@@ -3,12 +3,13 @@ package me.ccrama.redditslide.Activities;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.dean.jraw.models.Submission;
 
@@ -98,8 +99,7 @@ public class Gallery extends FullScreenActivity implements SubmissionDisplay {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                int[] firstVisibleItems;
-                firstVisibleItems =
+                int[] firstVisibleItems =
                         ((CatchStaggeredGridLayoutManager) rv.getLayoutManager()).findFirstVisibleItemPositions(
                                 null);
                 if (firstVisibleItems != null && firstVisibleItems.length > 0) {
@@ -220,7 +220,7 @@ public class Gallery extends FullScreenActivity implements SubmissionDisplay {
     public class OverviewPagerAdapter extends FragmentStatePagerAdapter {
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
         }
 
@@ -244,7 +244,6 @@ public class Gallery extends FullScreenActivity implements SubmissionDisplay {
                 case DEVIANTART:
                 case EMBEDDED:
                 case LINK:
-                case VID_ME:
                 case STREAMABLE:
                 case VIDEO: {
                     f = new MediaFragment();
@@ -274,7 +273,8 @@ public class Gallery extends FullScreenActivity implements SubmissionDisplay {
                     f.setArguments(args);
                 }
                 break;
-                case SELF: {
+                case SELF:
+                case NONE: {
                     if (baseSubs.get(i).getSelftext().isEmpty()) {
                         f = new TitleFull();
                         Bundle args = new Bundle();
@@ -299,24 +299,6 @@ public class Gallery extends FullScreenActivity implements SubmissionDisplay {
                     args.putString("sub", subreddit);
 
                     f.setArguments(args);
-                }
-                break;
-                case NONE: {
-                    if (baseSubs.get(i).getSelftext().isEmpty()) {
-                        f = new TitleFull();
-                        Bundle args = new Bundle();
-                        args.putInt("page", i);
-                        args.putString("sub", subreddit);
-
-                        f.setArguments(args);
-                    } else {
-                        f = new SelftextFull();
-                        Bundle args = new Bundle();
-                        args.putInt("page", i);
-                        args.putString("sub", subreddit);
-
-                        f.setArguments(args);
-                    }
                 }
                 break;
             }

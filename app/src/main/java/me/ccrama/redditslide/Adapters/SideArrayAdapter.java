@@ -4,8 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
-import android.os.Build;
-import android.support.v7.widget.CardView;
+import android.graphics.PorterDuffColorFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,9 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -95,7 +97,7 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
             } else {
                 sub = fitems.get(position);
             }
-            final TextView t = ((TextView) convertView.findViewById(R.id.name));
+            final TextView t = convertView.findViewById(R.id.name);
             t.setText(sub);
 
             if (height == 0) {
@@ -105,13 +107,8 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
                             @Override
                             public void onGlobalLayout() {
                                 height = finalConvertView.getHeight();
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                    finalConvertView.getViewTreeObserver()
-                                            .removeOnGlobalLayoutListener(this);
-                                } else {
-                                    finalConvertView.getViewTreeObserver()
-                                            .removeGlobalOnLayoutListener(this);
-                                }
+                                finalConvertView.getViewTreeObserver()
+                                        .removeOnGlobalLayoutListener(this);
                             }
                         });
             }
@@ -123,7 +120,7 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
             convertView.findViewById(R.id.color).setBackgroundResource(R.drawable.circle);
             convertView.findViewById(R.id.color)
                     .getBackground()
-                    .setColorFilter(Palette.getColor(subreddit), PorterDuff.Mode.MULTIPLY);
+                    .setColorFilter(new PorterDuffColorFilter(Palette.getColor(subreddit), PorterDuff.Mode.MULTIPLY));
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -204,9 +201,10 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
                             ((MainActivity) getContext()).drawerSearch.setText("");
                         }
                     }
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
-                            Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    InputMethodManager imm = ContextCompat.getSystemService(getContext(), InputMethodManager.class);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                 }
             });
             convertView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -251,9 +249,10 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
                     inte.putExtra(SubredditView.EXTRA_SUBREDDIT, subreddit);
                     ((Activity) getContext()).startActivityForResult(inte, 2001);
 
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
-                            Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    InputMethodManager imm = ContextCompat.getSystemService(getContext(), InputMethodManager.class);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                     return true;
                 }
             });

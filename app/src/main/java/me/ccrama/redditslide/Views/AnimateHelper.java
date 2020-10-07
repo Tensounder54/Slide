@@ -2,11 +2,11 @@ package me.ccrama.redditslide.Views;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
-import io.codetail.animation.SupportAnimator;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
+
 import io.codetail.animation.ViewAnimationUtils;
 import me.ccrama.redditslide.R;
 
@@ -39,7 +39,7 @@ public class AnimateHelper {
 
 
                 try {
-                    SupportAnimator animator =
+                    Animator animator =
                             ViewAnimationUtils.createCircularReveal(v, cx, cy, 0, finalRadius);
                     animator.setInterpolator(new FastOutSlowInInterpolator());
                     animator.setDuration(250);

@@ -10,18 +10,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.*;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,21 +33,22 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.cocosw.bottomsheet.BottomSheet;
+import com.google.android.material.snackbar.Snackbar;
 
-import me.ccrama.redditslide.Toolbox.Toolbox;
-import me.ccrama.redditslide.Toolbox.ToolboxUI;
-import me.ccrama.redditslide.Views.RoundedBackgroundSpan;
-import me.ccrama.redditslide.Visuals.FontPreferences;
 import net.dean.jraw.ApiException;
 import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.managers.ModerationManager;
 import net.dean.jraw.models.Comment;
-import net.dean.jraw.models.Contribution;
 import net.dean.jraw.models.DistinguishedStatus;
 import net.dean.jraw.models.PublicContribution;
 import net.dean.jraw.models.Submission;
@@ -66,8 +70,11 @@ import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.SubmissionViews.PopulateSubmissionViewHolder;
 import me.ccrama.redditslide.TimeUtils;
+import me.ccrama.redditslide.Toolbox.ToolboxUI;
 import me.ccrama.redditslide.UserSubscriptions;
 import me.ccrama.redditslide.Views.CreateCardView;
+import me.ccrama.redditslide.Views.RoundedBackgroundSpan;
+import me.ccrama.redditslide.Visuals.FontPreferences;
 import me.ccrama.redditslide.Visuals.Palette;
 import me.ccrama.redditslide.util.LinkUtil;
 import me.ccrama.redditslide.util.LogUtil;
@@ -116,7 +123,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         return POST;
     }
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }
@@ -162,7 +169,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         public void run() {
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -179,7 +186,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         public void run() {
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -212,7 +219,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     final View dialoglayout = inflater.inflate(R.layout.postmenu, null);
                     AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(mContext);
                     final TextView title = dialoglayout.findViewById(R.id.title);
-                    title.setText(Html.fromHtml(submission.getTitle()));
+                    title.setText(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
                     ((TextView) dialoglayout.findViewById(R.id.userpopup)).setText("/u/" + submission.getAuthor());
                     ((TextView) dialoglayout.findViewById(R.id.subpopup)).setText("/r/" + submission.getSubredditName());
@@ -309,7 +316,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         @Override
                         public void onClick(View v) {
                             final int pos = dataSet.posts.indexOf(submission);
-                            final Contribution old = dataSet.posts.get(pos);
+                            final PublicContribution old = dataSet.posts.get(pos);
                             dataSet.posts.remove(submission);
                             notifyItemRemoved(pos + 1);
                             d.dismiss();
@@ -319,7 +326,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                             Snackbar s = Snackbar.make(listView, R.string.submission_info_hidden, Snackbar.LENGTH_LONG).setAction(R.string.btn_undo, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    dataSet.posts.add(pos, (PublicContribution) old);
+                                    dataSet.posts.add(pos, old);
                                     notifyItemInserted(pos + 1);
                                     Hidden.undoHidden(old);
 
@@ -327,7 +334,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                             });
                             View view = s.getView();
                             TextView tv =
-                                    view.findViewById(android.support.design.R.id.snackbar_text);
+                                    view.findViewById(com.google.android.material.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
 
@@ -483,7 +490,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 // Add silver, gold, platinum icons and counts in that order
                 if (comment.getTimesSilvered() > 0) {
                     final String timesSilvered = (comment.getTimesSilvered() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesSilvered());
+                            : "\u200Ax" + comment.getTimesSilvered();
                     SpannableStringBuilder silvered =
                             new SpannableStringBuilder("\u00A0★" + timesSilvered + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.silver);
@@ -498,7 +505,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 }
                 if (comment.getTimesGilded() > 0) {
                     final String timesGilded = (comment.getTimesGilded() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesGilded());
+                            : "\u200Ax" + comment.getTimesGilded();
                     SpannableStringBuilder gilded =
                             new SpannableStringBuilder("\u00A0★" + timesGilded + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.gold);
@@ -513,7 +520,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 }
                 if (comment.getTimesPlatinized() > 0) {
                     final String timesPlatinized = (comment.getTimesPlatinized() == 1) ? ""
-                            : "\u200Ax" + Integer.toString(comment.getTimesPlatinized());
+                            : "\u200Ax" + comment.getTimesPlatinized();
                     SpannableStringBuilder platinized =
                             new SpannableStringBuilder("\u00A0★" + timesPlatinized + "\u00A0");
                     Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.platinum);
@@ -530,9 +537,9 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 holder.gild.setVisibility(View.GONE);
 
             if (comment.getSubmissionTitle() != null)
-                holder.title.setText(Html.fromHtml(comment.getSubmissionTitle()));
+                holder.title.setText(HtmlCompat.fromHtml(comment.getSubmissionTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
             else
-                holder.title.setText(Html.fromHtml(comment.getAuthor()));
+                holder.title.setText(HtmlCompat.fromHtml(comment.getAuthor(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -606,31 +613,33 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         final Drawable approve = mContext.getResources().getDrawable(R.drawable.support);
         final Drawable nsfw = mContext.getResources().getDrawable(R.drawable.hide);
         final Drawable pin = mContext.getResources().getDrawable(R.drawable.sub);
-        final Drawable distinguish = mContext.getResources().getDrawable(R.drawable.iconstarfilled);
+        final Drawable distinguish = mContext.getResources().getDrawable(R.drawable.star);
         final Drawable remove = mContext.getResources().getDrawable(R.drawable.close);
         final Drawable ban = mContext.getResources().getDrawable(R.drawable.ban);
         final Drawable spam = mContext.getResources().getDrawable(R.drawable.spam);
         final Drawable note = mContext.getResources().getDrawable(R.drawable.note);
-        final Drawable removeReason = mContext.getResources().getDrawable(R.drawable.reportreason);
+        final Drawable removeReason = mContext.getResources().getDrawable(R.drawable.report_reason);
+        final Drawable lock = mContext.getResources().getDrawable(R.drawable.lock);
 
         //Tint drawables
-        profile.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        report.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        approve.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        nsfw.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        distinguish.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        remove.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        pin.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        ban.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        spam.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        note.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-        removeReason.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        profile.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        report.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        approve.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        nsfw.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        distinguish.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        remove.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        pin.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        ban.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        spam.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        note.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        removeReason.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+        lock.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
 
         ta.recycle();
 
         //Bottom sheet builder
         BottomSheet.Builder b = new BottomSheet.Builder((Activity) mContext).title(
-                Html.fromHtml(comment.getBody()));
+                HtmlCompat.fromHtml(comment.getBody(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         int reportCount = reports.size() + reports2.size();
 
@@ -649,6 +658,14 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         b.sheet(6, remove, mContext.getString(R.string.btn_remove));
         b.sheet(7, removeReason, mContext.getString(R.string.mod_btn_remove_reason));
         b.sheet(10, spam, mContext.getString(R.string.mod_btn_spam));
+
+        final boolean locked = comment.getDataNode().has("locked")
+                && comment.getDataNode().get("locked").asBoolean();
+        if (locked) {
+            b.sheet(25, lock, mContext.getString(R.string.mod_btn_unlock_comment));
+        } else {
+            b.sheet(25, lock, mContext.getString(R.string.mod_btn_lock_comment));
+        }
 
         final boolean distinguished = !comment.getDataNode().get("distinguished").isNull();
         if (comment.getAuthor().equalsIgnoreCase(Authentication.name)) {
@@ -692,7 +709,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                                         Snackbar s = Snackbar.make(holder.itemView, R.string.comment_removed,
                                                 Snackbar.LENGTH_LONG);
                                         View view = s.getView();
-                                        TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                                        TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                                         tv.setTextColor(Color.WHITE);
                                         s.show();
 
@@ -721,6 +738,9 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     case 24:
                         ToolboxUI.showUsernotes(mContext, comment.getAuthor(), comment.getSubredditName(),
                                 "l," + comment.getParentId() + "," + comment.getId());
+                        break;
+                    case 25:
+                        lockUnlockComment(mContext, holder, comment, !locked);
                         break;
                 }
             }
@@ -769,7 +789,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     Snackbar s = Snackbar.make(holder.itemView, R.string.comment_distinguished,
                             Snackbar.LENGTH_LONG);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 } else {
@@ -804,7 +824,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     Snackbar s = Snackbar.make(holder.itemView, R.string.comment_undistinguished,
                             Snackbar.LENGTH_LONG);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 } else {
@@ -839,7 +859,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     Snackbar s = Snackbar.make(holder.itemView, R.string.comment_removed,
                             Snackbar.LENGTH_LONG);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
 
@@ -917,7 +937,7 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 if (b) {
                     Snackbar s = Snackbar.make(holder.itemView, R.string.comment_removed, Snackbar.LENGTH_LONG);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
 
@@ -943,6 +963,44 @@ public class ModeratorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 return true;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public static void lockUnlockComment(final Context mContext, final ProfileCommentViewHolder holder,
+            final Comment comment, final boolean lock) {
+        new AsyncTask<Void, Void, Boolean>() {
+
+            @Override
+            public void onPostExecute(Boolean b) {
+                if (b) {
+                    Snackbar s = Snackbar.make(holder.itemView, lock ? R.string.mod_locked : R.string.mod_unlocked,
+                            Snackbar.LENGTH_LONG);
+                    View view = s.getView();
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
+                    tv.setTextColor(Color.WHITE);
+                    s.show();
+                } else {
+                    new AlertDialogWrapper.Builder(mContext).setTitle(R.string.err_general)
+                            .setMessage(R.string.err_retry_later)
+                            .show();
+                }
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    if (lock) {
+                        new ModerationManager(Authentication.reddit).setLocked(comment);
+                    } else {
+                        new ModerationManager(Authentication.reddit).setUnlocked(comment);
+                    }
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                    return false;
+
+                }
+                return true;
+            }
+        }.execute();
     }
 
 }

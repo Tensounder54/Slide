@@ -13,19 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.AppCompatCheckBox;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.text.Spannable;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,10 +29,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.appcompat.widget.AppCompatCheckBox;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager.widget.ViewPager;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.http.MultiRedditUpdateRequest;
@@ -162,7 +163,7 @@ public class SubredditView extends BaseActivity {
             disableSwipeBackLayout();
         }
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        getWindow().getDecorView().setBackgroundDrawable(null);
+        getWindow().getDecorView().setBackground(null);
         super.onCreate(savedInstanceState);
         if (!restarting) {
             overridePendingTransition(R.anim.slideright, 0);
@@ -196,9 +197,8 @@ public class SubredditView extends BaseActivity {
         mToolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int[] firstVisibleItems;
                 int pastVisiblesItems = 0;
-                firstVisibleItems =
+                int[] firstVisibleItems =
                         ((CatchStaggeredGridLayoutManager) ((SubmissionsView) (adapter.getCurrentFragment())).rv
                                 .getLayoutManager()).findFirstVisibleItemPositions(null);
                 if (firstVisibleItems != null && firstVisibleItems.length > 0) {
@@ -306,7 +306,7 @@ public class SubredditView extends BaseActivity {
                     Snackbar s = Snackbar.make(findViewById(R.id.anchor),
                             getString(R.string.friends_sort_error), Snackbar.LENGTH_SHORT);
                     View view = s.getView();
-                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 } else {
@@ -886,7 +886,7 @@ public class SubredditView extends BaseActivity {
                                                                                                     tv =
                                                                                                     view
                                                                                                             .findViewById(
-                                                                                                                    android.support.design.R.id.snackbar_text);
+                                                                                                                    com.google.android.material.R.id.snackbar_text);
                                                                                             tv.setTextColor(
                                                                                                     Color.WHITE);
                                                                                             s.show();
@@ -949,7 +949,7 @@ public class SubredditView extends BaseActivity {
                                                                 if (s != null) {
                                                                     View view = s.getView();
                                                                     TextView tv = view.findViewById(
-                                                                            android.support.design.R.id.snackbar_text);
+                                                                            com.google.android.material.R.id.snackbar_text);
                                                                     tv.setTextColor(Color.WHITE);
                                                                     s.show();
                                                                 }
@@ -1028,8 +1028,7 @@ public class SubredditView extends BaseActivity {
         };
 
         final String FILTER_TITLE =
-                (subreddit.equals("frontpage")) ? (getString(R.string.content_to_hide, "frontpage"))
-                        : (getString(R.string.content_to_hide, "/r/" + subreddit));
+                (getString(R.string.content_to_hide, subreddit.equals("frontpage") ? "frontpage" : "/r/" + subreddit));
 
         new AlertDialogWrapper.Builder(this).setTitle(FILTER_TITLE)
                 .alwaysCallMultiChoiceCallback()
@@ -1254,7 +1253,7 @@ public class SubredditView extends BaseActivity {
         Snackbar s = Snackbar.make(mToolbar, isChecked ? getString(R.string.misc_subscribed)
                 : getString(R.string.misc_unsubscribed), Snackbar.LENGTH_SHORT);
         View view = s.getView();
-        TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+        TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
         tv.setTextColor(Color.WHITE);
         s.show();
     }
@@ -1295,7 +1294,7 @@ public class SubredditView extends BaseActivity {
 
                 //whether or not this subreddit was in the keySet
                 boolean isNotified =
-                        subThresholds.keySet().contains(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH));
+                        subThresholds.containsKey(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH));
                 ((AppCompatCheckBox) findViewById(R.id.notify_posts_state)).setChecked(isNotified);
             } else {
                 findViewById(R.id.sidebar_text).setVisibility(View.GONE);
@@ -1336,7 +1335,7 @@ public class SubredditView extends BaseActivity {
                                                         try {
                                                             final String multiName = multis.keySet()
                                                                     .toArray(
-                                                                            new String[multis.size()])[which];
+                                                                            new String[0])[which];
                                                             List<String> subs =
                                                                     new ArrayList<String>();
                                                             for (MultiSubreddit sub : multis.get(
@@ -1366,7 +1365,7 @@ public class SubredditView extends BaseActivity {
                                                                                     Snackbar.LENGTH_LONG);
                                                                     View view = s.getView();
                                                                     TextView tv = view.findViewById(
-                                                                            android.support.design.R.id.snackbar_text);
+                                                                            com.google.android.material.R.id.snackbar_text);
                                                                     tv.setTextColor(Color.WHITE);
                                                                     s.show();
                                                                 }
@@ -1417,10 +1416,8 @@ public class SubredditView extends BaseActivity {
                 final TextView subscribe = (TextView) findViewById(R.id.subscribe);
 
                 currentlySubbed =
-                        (!Authentication.isLoggedIn && UserSubscriptions.getSubscriptions(this)
-                                .contains(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH))) || (
-                                Authentication.isLoggedIn
-                                        && subreddit.isUserSubscriber());
+                        Authentication.isLoggedIn ? subreddit.isUserSubscriber() : UserSubscriptions.getSubscriptions(this)
+                                .contains(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH));
                 doSubscribeButtonText(currentlySubbed, subscribe);
 
                 assert subscribe != null;
@@ -1466,7 +1463,7 @@ public class SubredditView extends BaseActivity {
                                                                                                 tv =
                                                                                                 view
                                                                                                         .findViewById(
-                                                                                                                android.support.design.R.id.snackbar_text);
+                                                                                                                com.google.android.material.R.id.snackbar_text);
                                                                                         tv.setTextColor(
                                                                                                 Color.WHITE);
                                                                                         s.show();
@@ -1518,7 +1515,7 @@ public class SubredditView extends BaseActivity {
                                                             Snackbar.LENGTH_SHORT);
                                                     View view = s.getView();
                                                     TextView tv = view.findViewById(
-                                                            android.support.design.R.id.snackbar_text);
+                                                            com.google.android.material.R.id.snackbar_text);
                                                     tv.setTextColor(Color.WHITE);
                                                     s.show();
                                                 }
@@ -1533,11 +1530,10 @@ public class SubredditView extends BaseActivity {
                     public void onClick(View v) {
                         if (!currentlySubbed) {
                             doSubscribe();
-                            doSubscribeButtonText(currentlySubbed, subscribe);
                         } else {
                             doUnsubscribe();
-                            doSubscribeButtonText(currentlySubbed, subscribe);
                         }
+                        doSubscribeButtonText(currentlySubbed, subscribe);
                     }
 
                     private void doUnsubscribe() {
@@ -1582,7 +1578,7 @@ public class SubredditView extends BaseActivity {
                                                                                                 tv =
                                                                                                 view
                                                                                                         .findViewById(
-                                                                                                                android.support.design.R.id.snackbar_text);
+                                                                                                                com.google.android.material.R.id.snackbar_text);
                                                                                         tv.setTextColor(
                                                                                                 Color.WHITE);
                                                                                         s.show();
@@ -1634,7 +1630,7 @@ public class SubredditView extends BaseActivity {
                                                             Snackbar.LENGTH_SHORT);
                                                     View view = s.getView();
                                                     TextView tv = view.findViewById(
-                                                            android.support.design.R.id.snackbar_text);
+                                                            com.google.android.material.R.id.snackbar_text);
                                                     tv.setTextColor(Color.WHITE);
                                                     s.show();
                                                 }
@@ -1777,6 +1773,15 @@ public class SubredditView extends BaseActivity {
             } else {
                 findViewById(R.id.subimage).setVisibility(View.GONE);
             }
+            String bannerImage = subreddit.getBannerImage();
+            if (bannerImage != null && !bannerImage.isEmpty()) {
+                findViewById(R.id.sub_banner).setVisibility(View.VISIBLE);
+                ((Reddit) getApplication()).getImageLoader()
+                        .displayImage(bannerImage,
+                                (ImageView) findViewById(R.id.sub_banner));
+            } else {
+                findViewById(R.id.sub_banner).setVisibility(View.GONE);
+            }
             ((TextView) findViewById(R.id.subscribers)).setText(
                     getString(R.string.subreddit_subscribers_string,
                             subreddit.getLocalizedSubscriberCount()));
@@ -1851,7 +1856,7 @@ public class SubredditView extends BaseActivity {
         private BlankFragment   blankPage;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
             pager.clearOnPageChangeListeners();
             pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
@@ -2061,7 +2066,7 @@ public class SubredditView extends BaseActivity {
                 Fragment f = new CommentPage();
                 Bundle args = new Bundle();
                 String name = openingComments.getFullName();
-                args.putString("id", name.substring(3, name.length()));
+                args.putString("id", name.substring(3));
                 args.putBoolean("archived", openingComments.isArchived());
                 args.putBoolean("contest",
                         openingComments.getDataNode().get("contest_mode").asBoolean());

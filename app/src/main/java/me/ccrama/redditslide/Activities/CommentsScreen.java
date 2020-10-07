@@ -5,26 +5,36 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
-import me.ccrama.redditslide.Adapters.MultiredditPosts;
-import me.ccrama.redditslide.Adapters.SubmissionDisplay;
-import me.ccrama.redditslide.Adapters.SubredditPosts;
-import me.ccrama.redditslide.*;
-import me.ccrama.redditslide.Fragments.BlankFragment;
-import me.ccrama.redditslide.Fragments.CommentPage;
+
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
 import net.dean.jraw.models.Submission;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import me.ccrama.redditslide.Adapters.MultiredditPosts;
+import me.ccrama.redditslide.Adapters.SubmissionDisplay;
+import me.ccrama.redditslide.Adapters.SubredditPosts;
+import me.ccrama.redditslide.Authentication;
+import me.ccrama.redditslide.Fragments.BlankFragment;
+import me.ccrama.redditslide.Fragments.CommentPage;
+import me.ccrama.redditslide.LastComments;
+import me.ccrama.redditslide.OfflineSubreddit;
+import me.ccrama.redditslide.PostLoader;
+import me.ccrama.redditslide.R;
+import me.ccrama.redditslide.Reddit;
+import me.ccrama.redditslide.SettingValues;
 
 /**
  * This activity is responsible for the view when clicking on a post, showing the post and its
@@ -61,9 +71,7 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
         if (SettingValues.commentVolumeNav) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_VOLUME_UP:
-                    return ((CommentPage) comments.getCurrentFragment()).onKeyDown(keyCode, event);
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
-                    return ((CommentPage) comments.getCurrentFragment()).onKeyDown(keyCode, event);
                 case KeyEvent.KEYCODE_SEARCH:
                     return ((CommentPage) comments.getCurrentFragment()).onKeyDown(keyCode, event);
                 default:
@@ -77,8 +85,10 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
     @Override
     public void onPause() {
         super.onPause();
-        InputMethodManager imm = (InputMethodManager) getSystemService(BaseActivityAnim.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+        InputMethodManager imm = ContextCompat.getSystemService(this, InputMethodManager.class);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(findViewById(android.R.id.content).getWindowToken(), 0);
+        }
     }
 
     @Override
@@ -139,7 +149,7 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
             overrideSwipeFromAnywhere();
             applyColorTheme();
             getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            getWindow().getDecorView().setBackgroundDrawable(null);
+            getWindow().getDecorView().setBackground(null);
             super.onCreate(savedInstance);
             setContentView(R.layout.activity_slide);
         }
@@ -320,7 +330,7 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
         public  BlankFragment blankPage;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         public Fragment getCurrentFragment() {
@@ -330,7 +340,7 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
             super.setPrimaryItem(container, position, object);
-            if (getCurrentFragment() != object && object != null && object instanceof CommentPage) {
+            if (getCurrentFragment() != object && object instanceof CommentPage) {
                 mCurrentFragment = (CommentPage) object;
                 if (!mCurrentFragment.loaded && mCurrentFragment.isAdded()) {
                     mCurrentFragment.doAdapter(true);
@@ -349,7 +359,7 @@ public class CommentsScreen extends BaseActivityAnim implements SubmissionDispla
                 Fragment f = new CommentPage();
                 Bundle args = new Bundle();
                 String name = currentPosts.get(i).getFullName();
-                args.putString("id", name.substring(3, name.length()));
+                args.putString("id", name.substring(3));
                 args.putBoolean("archived", currentPosts.get(i).isArchived());
                 args.putBoolean("contest",
                         currentPosts.get(i).getDataNode().get("contest_mode").asBoolean());

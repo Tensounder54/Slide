@@ -2,7 +2,8 @@ package me.ccrama.redditslide.Adapters;
 
 import android.app.Activity;
 import android.os.AsyncTask;
-import android.support.v4.widget.SwipeRefreshLayout;
+
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -74,30 +75,21 @@ public class InboxMessages extends GeneralPosts {
                 if (reset) {
                     posts = subs;
 
-                    ((Activity) adapter.mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            refreshLayout.setRefreshing(false);
-                            loading = false;
-                            adapter.notifyDataSetChanged();
-
-                        }
-                    });
                 } else {
                     if(posts == null){
                         posts =new ArrayList<>();
                     }
                     posts.addAll(subs);
-                    ((Activity) adapter.mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            refreshLayout.setRefreshing(false);
-                            loading = false;
-                            adapter.notifyDataSetChanged();
-
-                        }
-                    });
                 }
+                ((Activity) adapter.mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshLayout.setRefreshing(false);
+                        loading = false;
+                        adapter.notifyDataSetChanged();
+
+                    }
+                });
             }
         }
 

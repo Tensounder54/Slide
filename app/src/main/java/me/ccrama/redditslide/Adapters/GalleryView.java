@@ -5,15 +5,17 @@ import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cocosw.bottomsheet.BottomSheet;
 
@@ -97,13 +99,12 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     holder.type.setImageResource(R.drawable.world);
                     break;
                 case SELF:
-                    holder.type.setImageResource(R.drawable.fontsizedarker);
+                    holder.type.setImageResource(R.drawable.fontsize);
                     break;
                 case EMBEDDED:
                 case GIF:
                 case STREAMABLE:
                 case VIDEO:
-                case VID_ME:
                     holder.type.setImageResource(R.drawable.play);
                     break;
                 default:
@@ -149,12 +150,12 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         TypedArray ta = main.obtainStyledAttributes(attrs);
 
                         int color = ta.getColor(0, Color.WHITE);
-                        Drawable open = main.getResources().getDrawable(R.drawable.ic_open_in_browser);
-                        open.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                        Drawable share = main.getResources().getDrawable(R.drawable.ic_share);
-                        share.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-                        Drawable copy = main.getResources().getDrawable(R.drawable.ic_content_copy);
-                        copy.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+                        Drawable open = main.getResources().getDrawable(R.drawable.open_in_browser);
+                        open.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                        Drawable share = main.getResources().getDrawable(R.drawable.share);
+                        share.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
+                        Drawable copy = main.getResources().getDrawable(R.drawable.copy);
+                        copy.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP));
 
                         ta.recycle();
 
@@ -190,7 +191,6 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     ContentType.Type type = ContentType.getContentType(submission);
                     if (!PostMatch.openExternal(submission.getUrl()) || type == ContentType.Type.VIDEO) {
                         switch (type) {
-                            case VID_ME:
                             case STREAMABLE:
                                 if (SettingValues.video) {
                                     Intent myIntent = new Intent(main, MediaView.class);
@@ -202,11 +202,15 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 }
                                 break;
                             case IMGUR:
+                            case DEVIANTART:
+                            case XKCD:
+                            case IMAGE:
                                 PopulateSubmissionViewHolder.openImage(type, main, submission, null, holder.getAdapterPosition());
                                 break;
                             case EMBEDDED:
                                 if (SettingValues.video) {
-                                    String data = Html.fromHtml(submission.getDataNode().get("media_embed").get("content").asText()).toString();
+                                    String data = HtmlCompat.fromHtml(submission.getDataNode().get("media_embed").get("content").asText(),
+                                            HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
                                     {
                                         Intent i = new Intent(main, FullscreenVideo.class);
                                         i.putExtra(FullscreenVideo.EXTRA_HTML, data);
@@ -258,11 +262,6 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                                 }
                                 break;
-                            case DEVIANTART:
-                            case XKCD:
-                            case IMAGE:
-                                PopulateSubmissionViewHolder.openImage(type, main, submission, null, holder.getAdapterPosition());
-                                break;
                             case GIF:
                                 PopulateSubmissionViewHolder.openGif(main, submission,  holder.getAdapterPosition());
                                 break;
@@ -291,7 +290,7 @@ public class GalleryView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return posts == null ? 0 : posts.size();
     }
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }

@@ -5,12 +5,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
+import androidx.core.text.HtmlCompat;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -67,7 +68,7 @@ public class PopMediaView {
         mashapeKey = SecretConstants.getImgurApiKey(c);
 
         if (contentUrl.contains("reddituploads.com")) {
-            contentUrl = Html.fromHtml(contentUrl).toString();
+            contentUrl = HtmlCompat.fromHtml(contentUrl, HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
         }
         if (contentUrl != null && shouldTruncate(contentUrl)) {
             contentUrl = contentUrl.substring(0, contentUrl.lastIndexOf("."));
@@ -87,7 +88,6 @@ public class PopMediaView {
             case IMGUR:
                 doLoadImgur(contentUrl, v);
                 break;
-            case VID_ME:
             case STREAMABLE:
             case GIF:
                 doLoadGif(contentUrl, v);
@@ -98,13 +98,14 @@ public class PopMediaView {
     public void doLoadGif(final String dat, View v) {
         v.findViewById(R.id.gifarea).setVisibility(View.VISIBLE);
 
-        MediaVideoView videoView = (MediaVideoView) v.findViewById(R.id.gif);
+        ExoVideoView videoView = v.findViewById(R.id.gif);
 
         videoView.clearFocus();
         v.findViewById(R.id.submission_image).setVisibility(View.GONE);
-        final ProgressBar loader = (ProgressBar) v.findViewById(R.id.gifprogress);
+        final ProgressBar loader = v.findViewById(R.id.gifprogress);
         v.findViewById(R.id.progress).setVisibility(View.GONE);
-        GifUtils.AsyncLoadGif gif = new GifUtils.AsyncLoadGif(((Activity) v.getContext()), (MediaVideoView) v.findViewById(R.id.gif), loader, null, null, false, true, true, "");
+        GifUtils.AsyncLoadGif gif = new GifUtils.AsyncLoadGif(((Activity) v.getContext()), videoView, loader, null,
+                null, false, true, "");
         gif.execute(dat);
     }
 
@@ -113,10 +114,10 @@ public class PopMediaView {
             url = url.substring(0, url.length() - 1);
         }
         final String finalUrl = url;
-        String hash = url.substring(url.lastIndexOf("/"), url.length());
+        String hash = url.substring(url.lastIndexOf("/"));
 
         if (NetworkUtil.isConnected(v.getContext())) {
-            if (hash.startsWith("/")) hash = hash.substring(1, hash.length());
+            if (hash.startsWith("/")) hash = hash.substring(1);
             final String apiUrl = "https://imgur-apiv3.p.mashape.com/3/image/" + hash + ".json";
             LogUtil.v(apiUrl);
 
@@ -270,11 +271,11 @@ public class PopMediaView {
     }
 
     public void displayImage(final String url, final View v) {
-        final SubsamplingScaleImageView i = (SubsamplingScaleImageView) v.findViewById(R.id.submission_image);
+        final SubsamplingScaleImageView i = v.findViewById(R.id.submission_image);
 
         i.setMinimumDpi(70);
         i.setMinimumTileDpi(240);
-        final ProgressBar bar = (ProgressBar) v.findViewById(R.id.progress);
+        final ProgressBar bar = v.findViewById(R.id.progress);
         bar.setIndeterminate(false);
         bar.setProgress(0);
 
@@ -290,7 +291,7 @@ public class PopMediaView {
         fakeImage.setLayoutParams(new LinearLayout.LayoutParams(i.getWidth(), i.getHeight()));
         fakeImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiscCache().get(url);
+        File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiskCache().get(url);
         if (f != null && f.exists()) {
             try {
                 i.setImage(ImageSource.uri(f.getAbsolutePath()));
@@ -307,11 +308,9 @@ public class PopMediaView {
                             .imageScaleType(ImageScaleType.NONE)
                             .cacheInMemory(false)
                             .build(), new ImageLoadingListener() {
-                        private View mView;
 
                         @Override
                         public void onLoadingStarted(String imageUri, View view) {
-                            mView = view;
                         }
 
                         @Override
@@ -322,7 +321,7 @@ public class PopMediaView {
 
                         @Override
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiscCache().get(url);
+                            File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiskCache().get(url);
                             if (f != null && f.exists()) {
                                 i.setImage(ImageSource.uri(f.getAbsolutePath()));
                             } else {

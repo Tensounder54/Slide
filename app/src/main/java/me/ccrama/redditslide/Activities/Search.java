@@ -7,14 +7,15 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.core.text.HtmlCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
@@ -23,8 +24,8 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import net.dean.jraw.paginators.SubmissionSearchPaginator;
 import net.dean.jraw.paginators.TimePeriod;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.Locale;
 
@@ -248,7 +249,7 @@ public class Search extends BaseActivityAnim {
 
         time = TimePeriod.ALL;
 
-        getSupportActionBar().setTitle(Html.fromHtml(where));
+        getSupportActionBar().setTitle(HtmlCompat.fromHtml(where, HtmlCompat.FROM_HTML_MODE_LEGACY));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         assert mToolbar != null; //it won't be, trust me
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -267,8 +268,7 @@ public class Search extends BaseActivityAnim {
                         + StringUtils.capitalize(time.name().toLowerCase(Locale.ENGLISH)));
 
         rv = ((RecyclerView) findViewById(R.id.vertical_content));
-        final RecyclerView.LayoutManager mLayoutManager;
-        mLayoutManager =
+        final RecyclerView.LayoutManager mLayoutManager =
                 createLayoutManager(getNumColumns(getResources().getConfiguration().orientation, Search.this));
         rv.setLayoutManager(mLayoutManager);
 

@@ -23,13 +23,13 @@
                 android:gravity="center"
                 android:visibility="gone">
 
-            <me.ccrama.redditslide.Views.MediaVideoView
+            <me.ccrama.redditslide.Views.ExoVideoView
                     android:id="@+id/gif"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_centerInParent="true">
 
-            </me.ccrama.redditslide.Views.MediaVideoView>
+            </me.ccrama.redditslide.Views.ExoVideoView>
 
             <FrameLayout
                     android:id="@+id/placeholder"
@@ -127,7 +127,7 @@
                 android:tag="tintactionbar"
                 android:tint="?attr/tintColor"
                 android:contentDescription="@string/img_score"
-                app:srcCompat="@drawable/upvoted" />
+                sothree:srcCompat="@drawable/upvoted" />
 
             <TextView
                 android:id="@+id/score"
@@ -154,7 +154,7 @@
                 android:tag="tintactionbar"
                 android:tint="?attr/tintColor"
                 android:contentDescription="@string/btn_save"
-                app:srcCompat="@drawable/iconstarfilled" />
+                sothree:srcCompat="@drawable/star" />
 
             <ImageView
                 android:id="@+id/upvote"
@@ -168,7 +168,7 @@
                 android:tag="tintactionbar"
                 android:tint="?attr/tintColor"
                 android:contentDescription="@string/btn_upvote"
-                app:srcCompat="@drawable/upvoted" />
+                sothree:srcCompat="@drawable/upvoted" />
 
             <ImageView
                 android:id="@+id/downvote"
@@ -181,7 +181,7 @@
                 android:tag="tintactionbar"
                 android:tint="?attr/tintColor"
                 android:contentDescription="@string/btn_downvote"
-                app:srcCompat="@drawable/downvote" />
+                sothree:srcCompat="@drawable/downvote" />
 
         </me.ccrama.redditslide.Views.RevealRelativeLayout>
 </RelativeLayout>

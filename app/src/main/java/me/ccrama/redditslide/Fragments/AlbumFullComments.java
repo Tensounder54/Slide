@@ -2,29 +2,25 @@ package me.ccrama.redditslide.Fragments;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.dean.jraw.models.Comment;
-import net.dean.jraw.models.CommentNode;
-import net.dean.jraw.models.Submission;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import me.ccrama.redditslide.Activities.CommentsScreen;
-import me.ccrama.redditslide.Activities.Shadowbox;
 import me.ccrama.redditslide.Activities.ShadowboxComments;
 import me.ccrama.redditslide.Adapters.AlbumView;
 import me.ccrama.redditslide.Adapters.CommentUrlObject;
@@ -42,7 +38,6 @@ public class AlbumFullComments extends Fragment {
 
     boolean gallery = false;
     private View list;
-    private int i = 0;
     private CommentUrlObject s;
     boolean hidden;
     View rootView;
@@ -68,7 +63,7 @@ public class AlbumFullComments extends Fragment {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         ((RecyclerView) list).setLayoutManager(layoutManager);
 
-        ((RecyclerView) list).setOnScrollListener(new RecyclerView.OnScrollListener() {
+        ((RecyclerView) list).addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -157,10 +152,7 @@ public class AlbumFullComments extends Fragment {
                                             + c.getDataNode()
                                             .get("link_id")
                                             .asText()
-                                            .substring(3, c.getDataNode()
-                                                    .get("link_id")
-                                                    .asText()
-                                                    .length())
+                                            .substring(3)
                                             + "/nothing/"
                                             + c.getId()
                                             + "?context=3";
@@ -201,8 +193,7 @@ public class AlbumFullComments extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle bundle = this.getArguments();
-        i = bundle.getInt("page", 0);
-        s = ((ShadowboxComments) getActivity()).comments.get(i);
+        s = ShadowboxComments.comments.get(bundle.getInt("page", 0));
     }
 
 

@@ -3,11 +3,12 @@ package me.ccrama.redditslide.Adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBar;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.core.text.HtmlCompat;
 
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -18,7 +19,6 @@ import net.dean.jraw.paginators.DomainPaginator;
 import net.dean.jraw.paginators.Paginator;
 import net.dean.jraw.paginators.SubredditPaginator;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -60,6 +60,7 @@ public class SubredditPosts implements PostLoader {
     public  boolean          offline;
     public  boolean          forced;
     public  boolean          loading;
+    public  boolean          error;
     private Paginator        paginator;
     public  OfflineSubreddit cached;
     Context c;
@@ -108,19 +109,19 @@ public class SubredditPosts implements PostLoader {
 
                             int length = submission.getThumbnails().getVariations().length;
                             if (SettingValues.lqLow && length >= 3) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[2].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (SettingValues.lqMid && length >= 4) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[3].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (length >= 5) {
-                                url = Html.fromHtml(submission.getThumbnails().getVariations()[
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getVariations()[
                                         length
-                                                - 1].getUrl()).toString(); //unescape url characters
+                                                - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(); //unescape url characters
                             } else {
-                                url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             }
 
@@ -177,24 +178,24 @@ public class SubredditPosts implements PostLoader {
 
                             int length = submission.getThumbnails().getVariations().length;
                             if (SettingValues.lqLow && length >= 3) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[2].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (SettingValues.lqMid && length >= 4) {
-                                url = Html.fromHtml(
-                                        submission.getThumbnails().getVariations()[3].getUrl())
+                                url = HtmlCompat.fromHtml(
+                                        submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             } else if (length >= 5) {
-                                url = Html.fromHtml(submission.getThumbnails().getVariations()[
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getVariations()[
                                         length
-                                                - 1].getUrl()).toString(); //unescape url characters
+                                                - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString(); //unescape url characters
                             } else {
-                                url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                                url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                         .toString(); //unescape url characters
                             }
 
                         } else {
-                            url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                            url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
 
@@ -301,7 +302,9 @@ public class SubredditPosts implements PostLoader {
 
         @Override
         public void onPostExecute(final List<Submission> submissions) {
+            boolean success = true;
             loading = false;
+
             if (error != null) {
                 if (error instanceof NetworkException) {
                     NetworkException e = (NetworkException) error;
@@ -323,11 +326,7 @@ public class SubredditPosts implements PostLoader {
                                 Toast.LENGTH_SHORT).show();
                     }
                 }
-                if (error.getCause() instanceof UnknownHostException) {
-                    Toast.makeText(context, "Loading failed, please check your internet connection",
-                            Toast.LENGTH_LONG).show();
-                }
-                displayer.updateError();
+                success = false;
             } else if (submissions != null && !submissions.isEmpty()) {
                 if (displayer instanceof SubmissionsView
                         && ((SubmissionsView) displayer).adapter.isError) {
@@ -391,9 +390,11 @@ public class SubredditPosts implements PostLoader {
                 } else if (!nomore) {
                     // error
                     LogUtil.v("Setting error");
-                    displayer.updateError();
+                    success = false;
                 }
             }
+
+            SubredditPosts.this.error = !success;
         }
 
         @Override
@@ -522,9 +523,9 @@ public class SubredditPosts implements PostLoader {
         int i = 0;
         for (String s : all) {
             String[] split = s.split(",");
-            titles[i] = (Long.valueOf(split[1]) == 0 ? c.getString(
+            titles[i] = (Long.parseLong(split[1]) == 0 ? c.getString(
                     R.string.settings_backup_submission_only)
-                    : TimeUtils.getTimeAgo(Long.valueOf(split[1]), c) + c.getString(
+                    : TimeUtils.getTimeAgo(Long.parseLong(split[1]), c) + c.getString(
                             R.string.settings_backup_comments));
             base[i] = s;
             i++;
@@ -567,7 +568,7 @@ public class SubredditPosts implements PostLoader {
                                             displayer.updateOfflineError();
                                         }
                                         // update offline
-                                        displayer.updateOffline(posts, Long.valueOf(s2[1]));
+                                        displayer.updateOffline(posts, Long.parseLong(s2[1]));
                                     }
                                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 return true;

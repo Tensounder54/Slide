@@ -6,6 +6,7 @@
     <item android:id="@+id/action_edit"
         android:icon="@drawable/edit"
         android:title="@string/editor_title"
+        android:visible="false"
         app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/action_shadowbox"
@@ -30,7 +31,7 @@
         android:title="@string/sorting_change_sorting"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/subs"
-        android:icon="@drawable/infonew"
+        android:icon="@drawable/info"
         android:title="@string/view_subreddits"
         app:showAsAction="ifRoom"/>
 

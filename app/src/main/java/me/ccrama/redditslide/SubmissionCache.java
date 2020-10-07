@@ -5,9 +5,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -16,9 +14,10 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.TypedValue;
 
+import androidx.core.text.HtmlCompat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
-import me.ccrama.redditslide.Toolbox.Toolbox;
 import net.dean.jraw.models.DistinguishedStatus;
 import net.dean.jraw.models.Submission;
 
@@ -182,7 +181,7 @@ public class SubmissionCache {
                     || (baseSub.equalsIgnoreCase("mod"))
                     || baseSub.contains(".")
                     || baseSub.contains("+"));
-            if (!secondary && !SettingValues.colorEverywhere || secondary) {
+            if (secondary || !SettingValues.colorEverywhere) {
                 subreddit.setSpan(new ForegroundColorSpan(Palette.getColor(subname)), 0,
                         subreddit.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 subreddit.setSpan(new StyleSpan(Typeface.BOLD), 0, subreddit.length(),
@@ -407,7 +406,7 @@ public class SubmissionCache {
     private static SpannableStringBuilder getTitleSpannable(Submission submission,
             String flairOverride, Context mContext) {
         SpannableStringBuilder titleString = new SpannableStringBuilder();
-        titleString.append(Html.fromHtml(submission.getTitle()));
+        titleString.append(HtmlCompat.fromHtml(submission.getTitle(), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         if (submission.isStickied()) {
             SpannableStringBuilder pinned = new SpannableStringBuilder("\u00A0"
@@ -430,7 +429,7 @@ public class SubmissionCache {
             // Add silver, gold, platinum icons and counts in that order
             if (submission.getTimesSilvered() > 0) {
                 final String timesSilvered = (submission.getTimesSilvered() == 1) ? ""
-                        : "\u200Ax" + Integer.toString(submission.getTimesSilvered());
+                        : "\u200Ax" + submission.getTimesSilvered();
                 SpannableStringBuilder silvered =
                         new SpannableStringBuilder("\u00A0★" + timesSilvered + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.silver);
@@ -446,7 +445,7 @@ public class SubmissionCache {
             }
             if (submission.getTimesGilded() > 0) {
                 final String timesGilded = (submission.getTimesGilded() == 1) ? ""
-                        : "\u200Ax" + Integer.toString(submission.getTimesGilded());
+                        : "\u200Ax" + submission.getTimesGilded();
                 SpannableStringBuilder gilded =
                         new SpannableStringBuilder("\u00A0★" + timesGilded + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.gold);
@@ -462,7 +461,7 @@ public class SubmissionCache {
             }
             if (submission.getTimesPlatinized() > 0) {
                 final String timesPlatinized = (submission.getTimesPlatinized() == 1) ? ""
-                        : "\u200Ax" + Integer.toString(submission.getTimesPlatinized());
+                        : "\u200Ax" + submission.getTimesPlatinized();
                 SpannableStringBuilder platinized =
                         new SpannableStringBuilder("\u00A0★" + timesPlatinized + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.platinum);
@@ -522,7 +521,7 @@ public class SubmissionCache {
                 flairString = submission.getSubmissionFlair().getText();
             }
             SpannableStringBuilder pinned =
-                    new SpannableStringBuilder("\u00A0" + Html.fromHtml(flairString) + "\u00A0");
+                    new SpannableStringBuilder("\u00A0" + HtmlCompat.fromHtml(flairString, HtmlCompat.FROM_HTML_MODE_LEGACY) + "\u00A0");
             pinned.setSpan(new RoundedBackgroundSpan(font, color, true, mContext), 0,
                     pinned.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             titleString.append(" ");

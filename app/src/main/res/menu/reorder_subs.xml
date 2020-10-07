@@ -12,12 +12,12 @@
         android:id="@+id/refresh"
         android:title="@string/sync_subscriptions"
         app:showAsAction="always"
-        android:icon="@drawable/refresh" />
+        android:icon="@drawable/sync" />
     <item
         android:id="@+id/info"
         android:title="@string/help"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/infonew" />
+        android:icon="@drawable/info" />
     <item
             android:id="@+id/alphabetize_subscribe"
             android:checkable="true"

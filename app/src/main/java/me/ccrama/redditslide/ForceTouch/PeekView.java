@@ -7,11 +7,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.support.annotation.FloatRange;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -22,7 +17,14 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import androidx.annotation.FloatRange;
+import androidx.annotation.IdRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.HashMap;
+import java.util.Map;
 
 import jp.wasabeef.blurry.Blurry;
 import me.ccrama.redditslide.ForceTouch.builder.PeekViewOptions;
@@ -35,7 +37,6 @@ import me.ccrama.redditslide.ForceTouch.util.NavigationUtils;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.Views.PeekMediaView;
-import me.ccrama.redditslide.util.LogUtil;
 
 public class PeekView extends FrameLayout {
 
@@ -47,8 +48,6 @@ public class PeekView extends FrameLayout {
 
     public  View                   content;
     private ViewGroup.LayoutParams contentParams;
-
-    private View dim;
 
     private PeekViewOptions options;
     private int             distanceFromTop;
@@ -138,12 +137,12 @@ public class PeekView extends FrameLayout {
     HashMap<Integer, OnButtonUp> buttons = new HashMap<>();
 
     public void checkButtons(MotionEvent event) {
-        for (Integer i : buttons.keySet()) {
-            View v = content.findViewById(i);
+        for (Map.Entry<Integer, OnButtonUp> entry : buttons.entrySet()) {
+            View v = content.findViewById(entry.getKey());
             Rect outRect = new Rect();
             v.getGlobalVisibleRect(outRect);
             if(outRect.contains((int) event.getX(), (int) event.getY())){
-                buttons.get(i).onButtonUp();
+                entry.getValue().onButtonUp();
             }
         }
     }
@@ -193,7 +192,7 @@ public class PeekView extends FrameLayout {
         }
 
         // add the background dim to the frame
-        dim = new View(context);
+        View dim = new View(context);
         dim.setBackgroundColor(Color.BLACK);
         dim.setAlpha(options.getBackgroundDim());
 
@@ -461,7 +460,7 @@ public class PeekView extends FrameLayout {
     /**
      * Wrapper class so we only have to implement the onAnimationEnd method.
      */
-    private abstract class AnimatorEndListener implements Animator.AnimatorListener {
+    private abstract static class AnimatorEndListener implements Animator.AnimatorListener {
         @Override
         public void onAnimationStart(Animator animator) {
         }

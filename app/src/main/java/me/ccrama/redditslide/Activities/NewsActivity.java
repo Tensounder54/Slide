@@ -15,16 +15,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.ViewDragHelper;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -32,7 +22,18 @@ import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.customview.widget.ViewDragHelper;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager.widget.ViewPager;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.google.android.material.tabs.TabLayout;
 
 import net.dean.jraw.managers.AccountManager;
 
@@ -97,7 +98,7 @@ public class NewsActivity extends BaseActivity
         changed = false;
         if (!SettingValues.synccitName.isEmpty()) {
             new MySynccitUpdateTask().execute(
-                    SynccitRead.newVisited.toArray(new String[SynccitRead.newVisited.size()]));
+                    SynccitRead.newVisited.toArray(new String[0]));
         }
         if (Authentication.isLoggedIn
                 && Authentication.me != null
@@ -133,50 +134,47 @@ public class NewsActivity extends BaseActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[],
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 1) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+                // permission was granted, yay! Do the
+                // contacts-related task you need to do.
 
-                } else {
+            } else {
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            new AlertDialogWrapper.Builder(NewsActivity.this).setTitle(
-                                    R.string.err_permission)
-                                    .setMessage(R.string.err_permission_msg)
-                                    .setPositiveButton(R.string.btn_yes,
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog,
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new AlertDialogWrapper.Builder(NewsActivity.this).setTitle(
+                                R.string.err_permission)
+                                .setMessage(R.string.err_permission_msg)
+                                .setPositiveButton(R.string.btn_yes,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog,
                                                         int which) {
-                                                    ActivityCompat.requestPermissions(
-                                                            NewsActivity.this, new String[]{
-                                                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                                            }, 1);
+                                                ActivityCompat.requestPermissions(
+                                                        NewsActivity.this, new String[]{
+                                                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                                        }, 1);
 
-                                                }
-                                            })
-                                    .setNegativeButton(R.string.btn_no,
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog,
+                                            }
+                                        })
+                                .setNegativeButton(R.string.btn_no,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog,
                                                         int which) {
-                                                    dialog.dismiss();
-                                                }
-                                            })
-                                    .show();
-                        }
-                    });
+                                                dialog.dismiss();
+                                            }
+                                        })
+                                .show();
+                    }
+                });
 
-                }
             }
 
             // other 'case' lines to check for other
@@ -253,8 +251,7 @@ public class NewsActivity extends BaseActivity
     public void onResume() {
         super.onResume();
 
-        if ((!inNightMode && SettingValues.isNight()) || (inNightMode
-                && !SettingValues.isNight())) {
+        if (inNightMode != SettingValues.isNight()) {
             restartTheme();
         }
 
@@ -378,11 +375,10 @@ public class NewsActivity extends BaseActivity
     }
 
     public void scrollToTop() {
-        int[] firstVisibleItems;
         int pastVisiblesItems = 0;
 
         if (((adapter.getCurrentFragment()) == null)) return;
-        firstVisibleItems =
+        int[] firstVisibleItems =
                 ((CatchStaggeredGridLayoutManager) (((NewsView) adapter.getCurrentFragment()).rv.getLayoutManager()))
                         .findFirstVisibleItemPositions(null);
         if (firstVisibleItems != null && firstVisibleItems.length > 0) {
@@ -443,7 +439,7 @@ public class NewsActivity extends BaseActivity
 
     public void setToolbarClick() {
         if (mTabLayout != null) {
-            mTabLayout.setOnTabSelectedListener(
+            mTabLayout.addOnTabSelectedListener(
                     new TabLayout.ViewPagerOnTabSelectedListener(pager) {
                         @Override
                         public void onTabReselected(TabLayout.Tab tab) {
@@ -499,7 +495,7 @@ public class NewsActivity extends BaseActivity
                 observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        mTabLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        mTabLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                         mTabLayout.getTabAt(tabIndex).select();
                     }
                 });
@@ -512,7 +508,7 @@ public class NewsActivity extends BaseActivity
         protected NewsView mCurrentFragment;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
             pager.clearOnPageChangeListeners();
             pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

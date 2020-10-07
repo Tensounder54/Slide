@@ -2,15 +2,17 @@ package me.ccrama.redditslide.Fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.mikepenz.itemanimators.SlideUpAlphaAnimator;
 
@@ -44,15 +46,15 @@ public class SubredditListView extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), new ColorPreferences(inflater.getContext()).getThemeSubreddit(where));
-        View v = ((LayoutInflater) contextThemeWrapper.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.fragment_verticalcontent, container, false);
+        View v = ContextCompat.getSystemService(contextThemeWrapper, LayoutInflater.class).inflate(R.layout.fragment_verticalcontent, container, false);
 
-        rv = ((RecyclerView) v.findViewById(R.id.vertical_content));
+        rv = v.findViewById(R.id.vertical_content);
         final RecyclerView.LayoutManager mLayoutManager = new PreCachingLayoutManager(getActivity());
 
         rv.setLayoutManager(mLayoutManager);
         rv.setItemAnimator(new SlideUpAlphaAnimator().withInterpolator(new LinearOutSlowInInterpolator()));
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.activity_main_swipe_refresh_layout);
+        mSwipeRefreshLayout = v.findViewById(R.id.activity_main_swipe_refresh_layout);
         mSwipeRefreshLayout.setColorSchemeColors(Palette.getColors("no sub", getContext()));
 
         //If we use 'findViewById(R.id.header).getMeasuredHeight()', 0 is always returned.
@@ -81,14 +83,7 @@ public class SubredditListView extends Fragment {
         adapter = new SubredditAdapter(getActivity(), posts, rv, where, this);
         rv.setAdapter(adapter);
         posts.loadMore(mSwipeRefreshLayout.getContext(), true, where);
-        mSwipeRefreshLayout.setOnRefreshListener(
-                new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        refresh();
-                    }
-                }
-        );
+        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
         rv.addOnScrollListener(new ToolbarScrollHideHandler(((BaseActivity) getActivity()).mToolbar, getActivity().findViewById(R.id.header)) {
 
             @Override

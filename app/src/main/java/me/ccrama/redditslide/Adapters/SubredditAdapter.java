@@ -7,12 +7,14 @@ package me.ccrama.redditslide.Adapters;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Handler;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.dean.jraw.models.Subreddit;
 
@@ -70,8 +72,7 @@ public class SubredditAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (position == dataSet.posts.size() && dataSet.nomore) {
             return NO_MORE;
         }
-        int SUBREDDIT = 1;
-        return SUBREDDIT;
+        return 1;
     }
 
     int tag = 1;
@@ -113,7 +114,8 @@ public class SubredditAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             holder.color.setBackgroundResource(R.drawable.circle);
-            holder.color.getBackground().setColorFilter(Palette.getColor(sub.getDisplayName().toLowerCase(Locale.ENGLISH)), PorterDuff.Mode.MULTIPLY);
+            holder.color.getBackground().setColorFilter(new PorterDuffColorFilter(
+                    Palette.getColor(sub.getDisplayName().toLowerCase(Locale.ENGLISH)), PorterDuff.Mode.MULTIPLY));
             holder.itemView.setOnClickListener(new OnSingleClickListener() {
                 @Override
                 public void onSingleClick(View view) {
@@ -181,13 +183,13 @@ public class SubredditAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
-    public class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
+    public static class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
         public SubmissionFooterViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    public class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }

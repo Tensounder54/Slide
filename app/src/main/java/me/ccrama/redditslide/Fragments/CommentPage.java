@@ -10,19 +10,13 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -35,10 +29,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.rey.material.widget.Slider;
 
 import net.dean.jraw.ApiException;
@@ -110,7 +115,6 @@ import me.ccrama.redditslide.Views.PreCachingLayoutManagerComments;
 import me.ccrama.redditslide.Visuals.Palette;
 import me.ccrama.redditslide.handler.ToolbarScrollHideHandler;
 import me.ccrama.redditslide.util.LinkUtil;
-import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.NetworkUtil;
 import me.ccrama.redditslide.util.OnSingleClickListener;
 import me.ccrama.redditslide.util.SubmissionParser;
@@ -226,15 +230,14 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
         if (!loadMore) {
             loadallV.setVisibility(View.GONE);
         } else {
-            loadallV.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            shownHeaders += loadallV.getMeasuredHeight();
+            shownHeaders += getTextViewMeasuredHeight((TextView) loadallV);
 
             loadallV.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     doRefresh(true);
 
-                    shownHeaders -= loadallV.getMeasuredHeight();
+                    shownHeaders -= getTextViewMeasuredHeight((TextView) loadallV);
                     headerHeight = headerV.getMeasuredHeight() + shownHeaders;
                     loadallV.setVisibility(View.GONE);
 
@@ -264,20 +267,19 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
             npV.setVisibility(View.GONE);
             archivedV.setVisibility(View.GONE);
         } else if (archived) {
-            archivedV.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            shownHeaders += archivedV.getMeasuredHeight();
+            shownHeaders += getTextViewMeasuredHeight((TextView) archivedV);
             npV.setVisibility(View.GONE);
             archivedV.setBackgroundColor(Palette.getColor(subreddit));
         } else {
             npV.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            shownHeaders += npV.getMeasuredHeight();
+            shownHeaders += getTextViewMeasuredHeight((TextView) npV);
             archivedV.setVisibility(View.GONE);
             npV.setBackgroundColor(Palette.getColor(subreddit));
         }
 
         if (locked) {
             lockedV.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            shownHeaders += lockedV.getMeasuredHeight();
+            shownHeaders += getTextViewMeasuredHeight((TextView) lockedV);
             lockedV.setBackgroundColor(Palette.getColor(subreddit));
         } else {
             lockedV.setVisibility(View.GONE);
@@ -285,7 +287,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
 
         if (contest) {
             contestV.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            shownHeaders += contestV.getMeasuredHeight();
+            shownHeaders += getTextViewMeasuredHeight((TextView) contestV);
             contestV.setBackgroundColor(Palette.getColor(subreddit));
         } else {
             contestV.setVisibility(View.GONE);
@@ -347,7 +349,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                         final int TINT = ContextCompat.getColor(getContext(), R.color.md_grey_600);
 
                         e.setHintTextColor(TINT);
-                        e.getBackground().setColorFilter(TINT, PorterDuff.Mode.SRC_IN);
+                        e.getBackground().setColorFilter(new PorterDuffColorFilter(TINT, PorterDuff.Mode.SRC_IN));
                     }
 
                     DoEditorActions.doActions(e, replyView,
@@ -367,7 +369,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                             });
                     final TextView profile = replyView.findViewById(R.id.profile);
                     final String[] changedProfile = {Authentication.name};
-                    profile.setText("/u/".concat(changedProfile[0]));
+                    profile.setText("/u/" + changedProfile[0]);
                     profile.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -386,13 +388,13 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
 
                             MaterialDialog.Builder builder = new MaterialDialog.Builder(getContext());
                             builder.title(getString(R.string.replies_switch_accounts));
-                            builder.items(keys.toArray(new String[keys.size()]));
+                            builder.items(keys.toArray(new String[0]));
                             builder.itemsCallbackSingleChoice(i, new MaterialDialog.ListCallbackSingleChoice() {
                                 @Override
                                 public boolean onSelection(MaterialDialog dialog, View itemView,
                                                            int which, CharSequence text) {
                                     changedProfile[0] = keys.get(which);
-                                    profile.setText("/u/".concat(changedProfile[0]));
+                                    profile.setText("/u/" + changedProfile[0]);
                                     return true;
                                 }
                             });
@@ -434,11 +436,10 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                         if (adapter != null) {
                             if (collapsed) {
                                 adapter.expandAll();
-                                collapsed = !collapsed;
                             } else {
                                 adapter.collapseAll();
-                                collapsed = !collapsed;
                             }
+                            collapsed = !collapsed;
                         }
                     }
                 });
@@ -461,11 +462,10 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                 @Override
                 public void onClick(View v) {
                     if (adapter != null && adapter.currentComments != null) {
-                        int parentCount, opCount, linkCount, awardCount;
-                        parentCount = 0;
-                        opCount = 0;
-                        linkCount = 0;
-                        awardCount = 0;
+                        int parentCount = 0;
+                        int opCount = 0;
+                        int linkCount = 0;
+                        int awardCount = 0;
                         String op = adapter.submission.getAuthor();
                         for (CommentObject o : adapter.currentComments) {
                             if (o.comment != null && !(o instanceof MoreChildItem)) {
@@ -879,7 +879,6 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                         ContentType.Type type =
                                 ContentType.getContentType(adapter.submission);
                         switch (type) {
-                            case VID_ME:
                             case STREAMABLE:
                                 if (SettingValues.video) {
                                     Intent myIntent =
@@ -953,7 +952,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                     Snackbar.LENGTH_SHORT);
                                     View view = s.getView();
                                     TextView tv = view.findViewById(
-                                            android.support.design.R.id.snackbar_text);
+                                            com.google.android.material.R.id.snackbar_text);
                                     tv.setTextColor(Color.WHITE);
                                     s.show();
 
@@ -969,9 +968,9 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                     .get("selftext_html")
                                                     .asText(),
                                             adapter.submission.getSubredditName(),
-                                            (SpoilerRobotoTextView) dialoglayout.findViewById(
+                                            dialoglayout.findViewById(
                                                     R.id.firstTextView),
-                                            (CommentOverflow) dialoglayout.findViewById(
+                                            dialoglayout.findViewById(
                                                     R.id.commentOverflow));
                                     builder.setView(dialoglayout);
                                     builder.show();
@@ -979,24 +978,21 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                 break;
                             case ALBUM:
                                 if (SettingValues.album) {
+                                    Intent i;
                                     if (SettingValues.albumSwipe) {
-                                        Intent i =
-                                                new Intent(getActivity(), AlbumPager.class);
+                                        i = new Intent(getActivity(), AlbumPager.class);
                                         i.putExtra(Album.EXTRA_URL,
                                                 adapter.submission.getUrl());
                                         i.putExtra(AlbumPager.SUBREDDIT, subreddit);
-                                        getActivity().startActivity(i);
-                                        getActivity().overridePendingTransition(
-                                                R.anim.slideright, R.anim.fade_out);
                                     } else {
-                                        Intent i = new Intent(getActivity(), Album.class);
+                                        i = new Intent(getActivity(), Album.class);
                                         i.putExtra(Album.EXTRA_URL,
                                                 adapter.submission.getUrl());
                                         i.putExtra(Album.SUBREDDIT, subreddit);
-                                        getActivity().startActivity(i);
-                                        getActivity().overridePendingTransition(
-                                                R.anim.slideright, R.anim.fade_out);
                                     }
+                                    getActivity().startActivity(i);
+                                    getActivity().overridePendingTransition(
+                                            R.anim.slideright, R.anim.fade_out);
                                 } else {
                                     LinkUtil.openExternally(adapter.submission.getUrl());
 
@@ -1004,24 +1000,22 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                 break;
                             case TUMBLR:
                                 if (SettingValues.image) {
+                                    Intent i;
                                     if (SettingValues.albumSwipe) {
-                                        Intent i = new Intent(getActivity(),
+                                        i = new Intent(getActivity(),
                                                 TumblrPager.class);
                                         i.putExtra(Album.EXTRA_URL,
                                                 adapter.submission.getUrl());
                                         i.putExtra(TumblrPager.SUBREDDIT, subreddit);
-                                        getActivity().startActivity(i);
-                                        getActivity().overridePendingTransition(
-                                                R.anim.slideright, R.anim.fade_out);
                                     } else {
-                                        Intent i = new Intent(getActivity(), Tumblr.class);
+                                        i = new Intent(getActivity(), Tumblr.class);
                                         i.putExtra(Tumblr.SUBREDDIT, subreddit);
                                         i.putExtra(Album.EXTRA_URL,
                                                 adapter.submission.getUrl());
-                                        getActivity().startActivity(i);
-                                        getActivity().overridePendingTransition(
-                                                R.anim.slideright, R.anim.fade_out);
                                     }
+                                    getActivity().startActivity(i);
+                                    getActivity().overridePendingTransition(
+                                            R.anim.slideright, R.anim.fade_out);
                                 } else {
                                     LinkUtil.openExternally(adapter.submission.getUrl());
 
@@ -1112,9 +1106,8 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                         sidebar.findViewById(R.id.loader).setVisibility(View.VISIBLE);
                         loaded = true;
 
-                        final View dialoglayout = sidebar;
                         {
-                            View submit = (dialoglayout.findViewById(R.id.submit));
+                            View submit = (sidebar.findViewById(R.id.submit));
 
                             if (!Authentication.isLoggedIn || !Authentication.didOnline) {
                                 submit.setVisibility(View.GONE);
@@ -1134,7 +1127,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                             });
                         }
 
-                        dialoglayout.findViewById(R.id.wiki)
+                        sidebar.findViewById(R.id.wiki)
                                 .setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -1143,7 +1136,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                         startActivity(i);
                                     }
                                 });
-                        dialoglayout.findViewById(R.id.submit)
+                        sidebar.findViewById(R.id.submit)
                                 .setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -1152,14 +1145,14 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                         startActivity(i);
                                     }
                                 });
-                        dialoglayout.findViewById(R.id.syncflair)
+                        sidebar.findViewById(R.id.syncflair)
                                 .setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                        ImageFlairs.syncFlairs(getContext(), subreddit);
                                     }
                                 });
-                        dialoglayout.findViewById(R.id.theme)
+                        sidebar.findViewById(R.id.theme)
                                 .setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -1181,7 +1174,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                 getActivity(), dialoglayout);
                                     }
                                 });
-                        dialoglayout.findViewById(R.id.mods)
+                        sidebar.findViewById(R.id.mods)
                                 .setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -1259,7 +1252,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                     }
                                 });
-                        dialoglayout.findViewById(R.id.flair).setVisibility(View.GONE);
+                        sidebar.findViewById(R.id.flair).setVisibility(View.GONE);
 
                     }
                     {
@@ -1319,8 +1312,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                                                         multiName =
                                                                                         multis.keySet()
                                                                                                 .toArray(
-                                                                                                        new String[multis
-                                                                                                                .size()])[which];
+                                                                                                        new String[0])[which];
                                                                                 List<String> subs =
                                                                                         new ArrayList<String>();
                                                                                 for (MultiSubreddit sub : multis
@@ -1408,11 +1400,8 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                         {
                             final TextView subscribe = sidebar.findViewById(R.id.subscribe);
 
-                            currentlySubbed = (!Authentication.isLoggedIn
-                                    && UserSubscriptions.getSubscriptions(getActivity())
-                                    .contains(baseSub.getDisplayName().toLowerCase(Locale.ENGLISH))) || (
-                                    Authentication.isLoggedIn
-                                            && baseSub.isUserSubscriber());
+                            currentlySubbed = Authentication.isLoggedIn ? baseSub.isUserSubscriber() : UserSubscriptions.getSubscriptions(getActivity())
+                                    .contains(baseSub.getDisplayName().toLowerCase(Locale.ENGLISH));
                             doSubscribeButtonText(currentlySubbed, subscribe);
 
                             subscribe.setOnClickListener(new View.OnClickListener() {
@@ -1462,7 +1451,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                                                                             tv =
                                                                                                             view
                                                                                                                     .findViewById(
-                                                                                                                            android.support.design.R.id.snackbar_text);
+                                                                                                                            com.google.android.material.R.id.snackbar_text);
                                                                                                     tv.setTextColor(
                                                                                                             Color.WHITE);
                                                                                                     s.show();
@@ -1519,7 +1508,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                                         Snackbar.LENGTH_SHORT);
                                                                 View view = s.getView();
                                                                 TextView tv = view.findViewById(
-                                                                        android.support.design.R.id.snackbar_text);
+                                                                        com.google.android.material.R.id.snackbar_text);
                                                                 tv.setTextColor(Color.WHITE);
                                                                 s.show();
                                                             }
@@ -1534,11 +1523,10 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                 public void onClick(View v) {
                                     if (!currentlySubbed) {
                                         doSubscribe();
-                                        doSubscribeButtonText(currentlySubbed, subscribe);
                                     } else {
                                         doUnsubscribe();
-                                        doSubscribeButtonText(currentlySubbed, subscribe);
                                     }
+                                    doSubscribeButtonText(currentlySubbed, subscribe);
                                 }
 
                                 private void doUnsubscribe() {
@@ -1588,7 +1576,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                                                                             tv =
                                                                                                             view
                                                                                                                     .findViewById(
-                                                                                                                            android.support.design.R.id.snackbar_text);
+                                                                                                                            com.google.android.material.R.id.snackbar_text);
                                                                                                     tv.setTextColor(
                                                                                                             Color.WHITE);
                                                                                                     s.show();
@@ -1644,7 +1632,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                                                         Snackbar.LENGTH_SHORT);
                                                                 View view = s.getView();
                                                                 TextView tv = view.findViewById(
-                                                                        android.support.design.R.id.snackbar_text);
+                                                                        com.google.android.material.R.id.snackbar_text);
                                                                 tv.setTextColor(Color.WHITE);
                                                                 s.show();
                                                             }
@@ -1664,8 +1652,8 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                             sidebar.findViewById(R.id.sub_title).setVisibility(View.VISIBLE);
                             setViews(baseSub.getDataNode().get("public_description_html").asText(),
                                     baseSub.getDisplayName().toLowerCase(Locale.ENGLISH),
-                                    ((SpoilerRobotoTextView) sidebar.findViewById(R.id.sub_title)),
-                                    (CommentOverflow) sidebar.findViewById(
+                                    sidebar.findViewById(R.id.sub_title),
+                                    sidebar.findViewById(
                                             R.id.sub_title_overflow));
                         } else {
                             sidebar.findViewById(R.id.sub_title).setVisibility(View.GONE);
@@ -1679,6 +1667,15 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
                                             (ImageView) sidebar.findViewById(R.id.subimage));
                         } else {
                             sidebar.findViewById(R.id.subimage).setVisibility(View.GONE);
+                        }
+                        String bannerImage = baseSub.getBannerImage();
+                        if (bannerImage != null && !bannerImage.isEmpty()) {
+                            sidebar.findViewById(R.id.sub_banner).setVisibility(View.VISIBLE);
+                            ((Reddit) getContext().getApplicationContext()).getImageLoader()
+                                    .displayImage(bannerImage,
+                                            (ImageView) sidebar.findViewById(R.id.sub_banner));
+                        } else {
+                            sidebar.findViewById(R.id.sub_banner).setVisibility(View.GONE);
                         }
                         ((TextView) sidebar.findViewById(R.id.subscribers)).setText(
                                 getString(R.string.subreddit_subscribers_string,
@@ -1835,12 +1832,11 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
             } else {
                 if (context.equals(Reddit.EMPTY_STRING)) {
                     comments = new SubmissionComments(fullname, this, mSwipeRefreshLayout);
-                    if (load) comments.setSorting(commentSorting);
                 } else {
                     comments = new SubmissionComments(fullname, this, mSwipeRefreshLayout, context,
                             contextNumber);
-                    if (load) comments.setSorting(commentSorting);
                 }
+                if (load) comments.setSorting(commentSorting);
             }
         }
     }
@@ -1923,11 +1919,10 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
             case CHILDREN:
                 return 1;
             case TIME:
+            case OP:
                 return 3;
             case GILDED:
                 return 6;
-            case OP:
-                return 3;
             case YOU:
                 return 5;
             case LINK:
@@ -2274,7 +2269,7 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
         Snackbar s = Snackbar.make(toolbar, isChecked ? getString(R.string.misc_subscribed)
                 : getString(R.string.misc_unsubscribed), Snackbar.LENGTH_SHORT);
         View view = s.getView();
-        TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+        TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
         tv.setTextColor(Color.WHITE);
         s.show();
     }
@@ -2327,4 +2322,29 @@ public class CommentPage extends Fragment implements Toolbar.OnMenuItemClickList
 
     CommentNavType currentSort = CommentNavType.PARENTS;
     long           sortTime    = 0;
+
+
+    /**
+     * This method will get the measured height of the text view taking into account if the text is multiline. This is done by
+     * drawing the text using TextPaint and measuring the height of the text in a text view with padding and alignment using StaticLayout.
+     * More details can be found in this thread: https://stackoverflow.com/questions/41779934/how-is-staticlayout-used-in-android/41779935#41779935
+     * */
+    private int getTextViewMeasuredHeight(TextView tv){
+        TextPaint textPaint = new TextPaint();
+        textPaint.setTypeface(tv.getTypeface());
+        textPaint.setTextSize(tv.getTextSize());
+        textPaint.setColor(tv.getCurrentTextColor());
+
+        //Since these text views takes the whole width of the screen, we get the width of the screen and subtract right and left padding to get the actual width of the text view
+        int deviceWidth = getResources().getDisplayMetrics().widthPixels - tv.getPaddingLeft() - tv.getPaddingRight();
+        Layout.Alignment alignment = Layout.Alignment.ALIGN_CENTER;
+
+        float spacingMultiplier = tv.getLineSpacingMultiplier();
+        float spacingAddition = tv.getLineSpacingExtra();
+
+        StaticLayout staticLayout = new StaticLayout(tv.getText(),textPaint,deviceWidth,alignment,spacingMultiplier,spacingAddition,false);
+
+        //Add top and bottom padding to the height and return the value
+        return staticLayout.getHeight() + tv.getPaddingTop() + tv.getPaddingBottom();
+    }
 }

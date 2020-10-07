@@ -1,14 +1,16 @@
 package me.ccrama.redditslide.Activities;
 
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
 
 import me.ccrama.redditslide.ColorPreferences;
 import me.ccrama.redditslide.Fragments.InboxPage;
@@ -40,7 +42,7 @@ public class ModQueue extends BaseActivityAnim {
         tabs.setSelectedTabIndicatorColor(new ColorPreferences(ModQueue.this).getColor("no sub"));
         final View header = findViewById(R.id.header);
         ViewPager pager = (ViewPager) findViewById(R.id.content_view);
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -69,7 +71,7 @@ public class ModQueue extends BaseActivityAnim {
         private Fragment mCurrentFragment;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
         }
 
@@ -79,7 +81,7 @@ public class ModQueue extends BaseActivityAnim {
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (getCurrentFragment() != object) {
+            if (mCurrentFragment != object) {
                 mCurrentFragment = ((Fragment) object);
             }
             super.setPrimaryItem(container, position, object);

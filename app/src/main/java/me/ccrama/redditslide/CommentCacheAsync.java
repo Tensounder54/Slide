@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v4.app.NotificationCompat;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -30,12 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import me.ccrama.redditslide.Activities.CommentsScreenSingle;
-import me.ccrama.redditslide.Autocache.AutoCacheScheduler;
-import me.ccrama.redditslide.Notifications.NotificationJobScheduler;
 import me.ccrama.redditslide.util.GifUtils;
 import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.NetworkUtil;
@@ -94,26 +92,26 @@ public class CommentCacheAsync extends AsyncTask {
                         int length = submission.getThumbnails().getVariations().length;
                         if (SettingValues.lqLow && length >= 3)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[2].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else if (SettingValues.lqMid && length >= 4)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[3].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else if (length >= 5)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[length - 1].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[length - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getSource().getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
 
@@ -171,31 +169,31 @@ public class CommentCacheAsync extends AsyncTask {
                         int length = submission.getThumbnails().getVariations().length;
                         if (SettingValues.lqLow && length >= 3)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[2].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[2].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else if (SettingValues.lqMid && length >= 4)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[3].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[3].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else if (length >= 5)
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getVariations()[length - 1].getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getVariations()[length - 1].getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
                         else
                         {
-                            url = Html.fromHtml(
-                                    submission.getThumbnails().getSource().getUrl())
+                            url = HtmlCompat.fromHtml(
+                                    submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                     .toString(); //unescape url characters
                         }
 
                     } else {
-                        url = Html.fromHtml(submission.getThumbnails().getSource().getUrl())
+                        url = HtmlCompat.fromHtml(submission.getThumbnails().getSource().getUrl(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                                 .toString(); //unescape url characters
                     }
 
@@ -301,8 +299,7 @@ public class CommentCacheAsync extends AsyncTask {
 
         for (final String fSub : subs) {
             final String sub;
-            final String name = fSub;
-            CommentSort sortType = SettingValues.getCommentSorting(name);
+            CommentSort sortType = SettingValues.getCommentSorting(fSub);
 
             if (multiNameToSubsMap.containsKey(fSub)) {
                 sub = multiNameToSubsMap.get(fSub);
@@ -312,15 +309,13 @@ public class CommentCacheAsync extends AsyncTask {
 
             if (!sub.isEmpty()) {
                 if (!sub.equals(SAVED_SUBMISSIONS)) {
-                    mNotifyManager = (NotificationManager) context.getSystemService(
-                            Context.NOTIFICATION_SERVICE);
-                    mBuilder = new NotificationCompat.Builder(context);
+                    mNotifyManager = ContextCompat.getSystemService(context, NotificationManager.class);
+                    mBuilder = new NotificationCompat.Builder(context, Reddit.CHANNEL_COMMENT_CACHE);
                     mBuilder.setOngoing(true);
-                    mBuilder.setChannelId(Reddit.CHANNEL_COMMENT_CACHE);
                     mBuilder.setContentTitle(context.getString(R.string.offline_caching_title,
-                            sub.equalsIgnoreCase("frontpage") ? name
-                                    : (name.contains("/m/") ? name : "/r/" + name)))
-                            .setSmallIcon(R.drawable.save_png);
+                            sub.equalsIgnoreCase("frontpage") ? fSub
+                                    : (fSub.contains("/m/") ? fSub : "/r/" + fSub)))
+                            .setSmallIcon(R.drawable.save_content);
                 }
                 List<Submission> submissions = new ArrayList<>();
                 ArrayList<String> newFullnames = new ArrayList<>();
@@ -329,7 +324,7 @@ public class CommentCacheAsync extends AsyncTask {
                     submissions.addAll(alreadyReceived);
                 } else {
                     SubredditPaginator p;
-                    if (name.equalsIgnoreCase("frontpage")) {
+                    if (fSub.equalsIgnoreCase("frontpage")) {
                         p = new SubredditPaginator(Authentication.reddit);
                     } else {
                         p = new SubredditPaginator(Authentication.reddit, sub);
@@ -342,9 +337,9 @@ public class CommentCacheAsync extends AsyncTask {
                     }
                 }
 
-                int commentDepth = Integer.valueOf(
+                int commentDepth = Integer.parseInt(
                         SettingValues.prefs.getString(SettingValues.COMMENT_DEPTH, "5"));
-                int commentCount = Integer.valueOf(
+                int commentCount = Integer.parseInt(
                         SettingValues.prefs.getString(SettingValues.COMMENT_COUNT, "50"));
 
                 Log.v("CommentCacheAsync", "comment count " + commentCount);
@@ -363,16 +358,20 @@ public class CommentCacheAsync extends AsyncTask {
                         newFullnames.add(s2.getFullName());
                         if (!SettingValues.noImages) loadPhotos(s, context);
                         switch (ContentType.getContentType(s)) {
+                            case VREDDIT_DIRECT:
+                            case VREDDIT_REDIRECT:
                             case GIF:
                                 if (otherChoices[0]) {
                                     if (context instanceof Activity) {
                                         ((Activity) context).runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                ExecutorService service =
-                                                        Executors.newSingleThreadExecutor();
-                                                new GifUtils.AsyncLoadGif().executeOnExecutor(
-                                                        service, s.getUrl());
+                                                GifUtils.cacheSaveGif(
+                                                        Uri.parse(GifUtils.AsyncLoadGif.formatUrl(s.getUrl())),
+                                                        (Activity) context,
+                                                        s.getSubredditName(),
+                                                        false
+                                                );
                                             }
                                         });
                                     }

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -25,6 +23,10 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -85,7 +87,8 @@ public class ToolboxUI {
             return;
         }
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = ContextCompat.getSystemService(context, LayoutInflater.class);
+        assert inflater != null;
         final View dialogContent = inflater.inflate(R.layout.toolbox_removal_dialog, null);
 
         final CheckBox headerToggle = dialogContent.findViewById(R.id.toolbox_header_toggle);
@@ -311,10 +314,10 @@ public class ToolboxUI {
                             typeMap = Toolbox.DEFAULT_USERNOTE_TYPES;
                         }
 
-                        for (String type : typeMap.keySet()) {
+                        for (Map<String, String> stringStringMap : typeMap.values()) {
                             SpannableStringBuilder typeString =
-                                    new SpannableStringBuilder(" [" + typeMap.get(type).get("text") + "] ");
-                            typeString.setSpan(new BackgroundColorSpan(Color.parseColor(typeMap.get(type).get("color"))),
+                                    new SpannableStringBuilder(" [" + stringStringMap.get("text") + "] ");
+                            typeString.setSpan(new BackgroundColorSpan(Color.parseColor(stringStringMap.get("color"))),
                                     0, typeString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                             typeString.setSpan(new ForegroundColorSpan(Color.WHITE), 0, typeString.length(),
                                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -602,7 +605,7 @@ public class ToolboxUI {
             try {
                 new ModerationManager(Authentication.reddit).remove((PublicContribution) objects[0], false);
                 if (lock && thing instanceof Submission) {
-                    new ModerationManager(Authentication.reddit).setLocked((Submission) thing);
+                    new ModerationManager(Authentication.reddit).setLocked(thing);
                 }
                 if ((flair[0].length() > 0 || flair[1].length() > 0) && thing instanceof Submission) {
                     new ModerationManager(Authentication.reddit).setFlair(((Submission) thing).getSubredditName(),
